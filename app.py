@@ -1,27 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import json
-import pandas as pd
 
 import dash
 import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 
-import common as cmn
+from load_data import load_data
 from county_plot import county_plot
 from state_plot import state_plot
 from timeline_plot import timeline_plot
 from histog_plot import histog_plot
-
-
-def load_data():
-    country_df = pd.read_csv(cmn.datapath/"CountryData.csv", parse_dates=['date']).set_index('date')
-    state_df = pd.read_csv(cmn.datapath/"StateData.csv", parse_dates=['date']).set_index('date')
-    county_df = pd.read_csv(cmn.datapath/"CountyData.csv", parse_dates=['date']).set_index('date')                           
-    dates = country_df.index.unique().to_list()
-    return country_df, state_df, county_df, dates
-
 
 country_df, state_df, county_df, dates = load_data()
 
@@ -424,10 +414,10 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
     global filters_div
     ctx = dash.callback_context
     
+    selected = None
     cur_map = map_div.children[1].figure
     if ctx.triggered[0]['prop_id'] != '.':
         # call triggered by a change in UI param
-        selected = None
         if ctx.triggered[0]['prop_id'] == 'filter_attrs.value':
             # change in selected filters
             update_selected_filters(selected_filters)
@@ -445,7 +435,7 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
         update_selected_filters(selected_filters)
 
     return cur_map, filters_div.children
-    #return cur_map, [html.H5("selecting filters %s  triggered: %s"%(str(selected_filters), json.dumps(ctx.triggered)))] + filters_div.children
+    #return cur_map, [html.H5("selected %s  triggered: %s"%(str(selected), json.dumps(ctx.triggered)))] + filters_div.children
 
 
 # callback to respond to map click

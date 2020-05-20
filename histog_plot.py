@@ -4,12 +4,12 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.offline import plot
 
-
 def histog_plot(values, log_bins=False, min_val=None, max_val=None, nbins=100, title=None, ht=150):
     if log_bins:
         values = np.log10(values[values > 0])
-    max_val = max_val or 1.01 * values.max()
-    min_val = min_val or 0.99 * values.min()
+    range_val = values.max() - values.min()
+    max_val = max_val or values.max() + 0.01*range_val
+    min_val = min_val or values.min() - 0.01*range_val
     fig = go.Figure(data=go.Histogram(x=values, 
                                       xbins=dict(
                                               start=min_val,
@@ -30,14 +30,14 @@ def histog_plot(values, log_bins=False, min_val=None, max_val=None, nbins=100, t
 
 if __name__ == "__main__":
     # execute only if run as a script
-    from prepare_case_data import get_case_data
-    from prepare_movement_data import get_movement_data
+    from load_data import load_data
 
-    country_case_df, state_case_df, county_case_df = get_case_data()
-    country_mmt_df, state_mmt_df, county_mmt_df = get_movement_data()
-    attributes = ['cases', 'deaths', 'total_case_rate', 'total_death_rate', 'new_cases', 'new_deaths']
+    country_df, state_df, county_df, dates = load_data()
+
+    attributes = ['cases', 'deaths', 'total_case_rate', 'total_death_rate', 'new_cases', 'new_deaths', 'overall_pct_change']
     
-    attr = attributes[4]
-    fig = histog_plot(country_case_df[attr], nbins=100, log_bins=True)
-    fig['data'][0].selectedpoints=[0, 1, 2, 3, 4, 5, 47, 48, 80, 81, 82, 83, 84, 85, 86, 87, 88]
+    attr = attributes[-1]
+    values = state_df[attr].loc[dates[-1]]
+    fig = histog_plot(values, nbins=100, log_bins=False)
+    fig['data'][0].selectedpoints=[32, 1, 36, 9, 10, 41, 48, 18, 19, 21, 22, 23, 24, 26, 28]
     plot(fig)
