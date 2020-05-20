@@ -4,7 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.offline import plot
 
-def histog_plot(values, log_bins=False, min_val=None, max_val=None, nbins=100, title=None, ht=150):
+def histog_plot(values, log_bins=False, min_val=None, max_val=None, nbins=100, xlabel=None, title=None, ht=150):
     if log_bins:
         values = np.log10(values[values > 0])
     range_val = values.max() - values.min()
@@ -21,10 +21,13 @@ def histog_plot(values, log_bins=False, min_val=None, max_val=None, nbins=100, t
                     )
     if title:
         fig.update_layout(title_text=title)
+    if xlabel:
+        fig.update_layout(xaxis_title_text=xlabel)
     fig.update_layout(
-        margin=dict(l=20, r=20, t=30, b=10),
+        margin=dict(l=20, r=20, t=10, b=10, pad=5),
         paper_bgcolor="White",
-        height=ht
+        height=ht,
+        xaxis=dict(title=dict(text=xlabel, standoff=5), automargin=True)
     )
     return fig
 
