@@ -304,7 +304,7 @@ auth = dash_auth.BasicAuth(
 
 app.layout = get_app_layout()
 
-
+server = app.server     # needed for gunicorn/heroku deployment
 #########################################################################################
 #
 # app callback handlers and helpers
