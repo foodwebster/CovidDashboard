@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import json
-from datetime import datetime
+import pandas as pd
+
 import dash
 import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 
-from prepare_case_data import get_case_data
-from prepare_movement_data import get_movement_data
+import common as cmn
 from county_plot import county_plot
 from state_plot import state_plot
 from timeline_plot import timeline_plot
@@ -16,48 +16,22 @@ from histog_plot import histog_plot
 
 
 def load_data():
-    start_date = datetime(2020, 2, 15)
-    
-    country_case_df, state_case_df, county_case_df = get_case_data(start_date)
-    country_mmt_df, state_mmt_df, county_mmt_df = get_movement_data(start_date)
-    
-    dropcol = ['country_region_code', 'country_region', 'sub_region_1', 'sub_region_2']
-    country_df = country_case_df.join(country_mmt_df.drop(columns=dropcol), how='inner')
-    
-    state_mmt_df = state_mmt_df.drop(columns=dropcol + ['State']) \
-                               .rename(columns={'Abbreviation': 'State'}) \
-                               .set_index('State', append=True)
-    state_df = state_case_df.set_index('State', append=True) \
-                            .join(state_mmt_df, how='inner') \
-                            .reset_index(level='State') \
-                            .sort_index()
-    
-    county_case_df = county_case_df.drop(columns=['stateFIPS', 'countyFIPS']) \
-                                   .set_index('fips_str', append=True)
-    county_mmt_df = county_mmt_df.drop(columns=['country_region_code', 
-                                                 'country_region', 
-                                                 'sub_region_1', 
-                                                 'sub_region_2',
-                                                 'State_x', 
-                                                 'Abbreviation', 
-                                                 'FIPS', 
-                                                 'Name', 
-                                                 'State_y']) \
-                                   .set_index('fips_str', append=True)
-    county_df = county_case_df.join(county_mmt_df, how='inner') \
-                              .reset_index(level='fips_str')
-                              
+    country_df = pd.read_csv(cmn.datapath/"CountryData.csv", parse_dates=['date']).set_index('date')
+    state_df = pd.read_csv(cmn.datapath/"StateData.csv", parse_dates=['date']).set_index('date')
+    county_df = pd.read_csv(cmn.datapath/"CountyData.csv", parse_dates=['date']).set_index('date')                           
     dates = country_df.index.unique().to_list()
-
     return country_df, state_df, county_df, dates
 
 
 country_df, state_df, county_df, dates = load_data()
 
+# build mapping between index and date display data 
+# only display one date per week, include styling info
 date_idx = dict(zip(range(len(dates)), [{'label': str(d.date()),
                                          'style': {"transform": "translate(-45px, 7px) rotate(-45deg)"}
                                          } if d.dayofweek==1 else '' for d in dates]))
 
+# list of data attributes
 attributes = {'cases': {'name': 'Cases', 'log': True}, 
               'deaths': {'name': 'Deaths', 'log': True},
               'cases_per_100k': {'name': 'Cases per 100k', 'log': True}, 
@@ -66,6 +40,8 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'new_deaths': {'name': 'New Deaths', 'log': True},
               'overall_pct_change': {'name': 'Mobility % Change', 'log': False},
               }
+
+ts_attrs = ['cases', 'deaths', 'new_cases', 'new_deaths', 'overall_pct_change']
 
 geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']
@@ -135,18 +111,12 @@ def get_timeline_plot(dates, values, logy, title):
                          title=title)
 
 
-def get_ts_plot(plot_type, state, county):
+def get_ts_plot(attr, state, county):
     '''
     plot_type: 0 - pandemic data, 1 - movement data
     one or none of state, county should be set
     '''
-    if plot_type == 0:
-        attr = next(iter(attributes.keys()))
-        logy = True
-    else:
-        attr = 'overall_pct_change'
-        logy = False
-
+    logy = attributes[attr]['log']
     if state is not None:
         sdf = state_df[state_df.State == state]
         return get_timeline_plot(sdf.index, 
@@ -250,24 +220,25 @@ def get_filter(attr, date_idx, state, county, enable=True):
               }  
     )    
 
-def get_timeseries_div(state=None, county=None):
+def get_timeseries_div(attrs, state=None, county=None):
     return html.Div(
         id='Timelines',
         children=[
             html.H3('Timelines', style={
                 'textAlign': 'left',
             }),
-            dcc.Graph(
-                id='Pandemic_Timeline',
-                config=graph_config(),
-                figure=get_ts_plot(0, state, county)
-            ),
-            dcc.Graph(
-                id='Movement_Timeline',
-                config=graph_config(),
-                figure=get_ts_plot(1, state, county)
-            )
-        ],
+            dcc.Dropdown(
+                id='timeline_attrs',
+                options=[{'label': val, 'value': val} for val in ts_attrs],
+                value=attrs,
+                searchable=False,
+                multi=True,
+                placeholder="Select timeline attributes",
+                style={'fontSize': '20px'}
+            )] + [dcc.Graph(id='timeline_' + attr,
+                            config=graph_config(),
+                            figure=get_ts_plot(attr, state, county),
+                            style={'display': 'block' if attr in attrs else 'none'}) for attr in ts_attrs],
         style={'width': 400}
     )
 
@@ -286,7 +257,7 @@ def get_filters_div(selected_filters=[], state=None, county=None):
                 searchable=False,
                 multi=True,
                 placeholder="Select filter attributes",
-                style={'font-size': '20px'}
+                style={'fontSize': '20px'}
             ),
         ] + [get_filter(attr, current_date_idx, state, county, attr in selected_filters) for attr in attributes.keys()],
         style={'width': 400}
@@ -295,9 +266,9 @@ def get_filters_div(selected_filters=[], state=None, county=None):
 
 def get_app_layout():
     global filters_div, map_div, ts_div
-    filters_div = get_filters_div()
+    filters_div = get_filters_div([[next(iter(attributes.keys()))]])
     map_div = get_map_div()
-    ts_div = get_timeseries_div()
+    ts_div = get_timeseries_div([ts_attrs[0], ts_attrs[-1]])
     return html.Div(
         children=[
             html.H1(children='Covid Dashboard', style={
@@ -305,9 +276,9 @@ def get_app_layout():
             }),
             html.Div(
                 children=[
-                    get_filters_div(),
-                    get_map_div(),
-                    get_timeseries_div()
+                    filters_div,
+                    map_div,
+                    ts_div
                 ],
                 className='row',
                 style={'display': 'flex'}
@@ -338,6 +309,14 @@ app.layout = get_app_layout()
 #
 # app callback handlers and helpers
 #
+def get_attr_timeseries(attr):
+    fid = 'timeline_' + attr
+    for div in ts_div.children[2:]:
+        if div.id == fid:
+            return div
+    return None
+
+
 def get_attr_filter(attr):
     fid = 'filter_' + attr
     for div in filters_div.children[2:]:
@@ -398,13 +377,25 @@ def update_selected_filters(values):
         new_val = 'block' if attr in values else 'none'
         if div.style['display'] != new_val:
             # filter viz changed
-            div.style['display'] = 'block' if attr in values else 'none'
+            div.style['display'] = new_val
             # reset filter to defaults
             sl = div.children[1]
             sl.value = [sl.min, sl.max]
             div.children[0].selected = None
-    # retain values
+    # retain values in multi-select
     filters_div.children[1].value = values
+
+
+def update_selected_timelines(values):
+    global ts_div
+    for attr in ts_attrs:
+        div = get_attr_timeseries(attr)
+        new_val = 'block' if attr in values else 'none'
+        if div.style['display'] != new_val:
+            # filter viz changed
+            div.style['display'] = new_val
+    # retain values in multi-select
+    ts_div.children[1].value = values
 
 
 # callback for dropdowns and slider to display correct map (state/county, attribute, date)
@@ -433,38 +424,47 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
     global filters_div
     ctx = dash.callback_context
     
-    selected = None
-    if ctx.triggered[0]['prop_id'] == 'filter_attrs.value':
-        # change in selected filters
-        update_selected_filters(selected_filters)
-    elif changed_map_options(ctx):
-        # change in map options (state/county, date etc)
-        map_div.children[1].figure = update_map(geo, attribute, date_idx)
-        # new geo, date or attribute, force new filter
-        filters_div = get_filters_div(selected_filters)
-    elif changed_filter_values(ctx):
-        # change in filter slider value
-        selected = update_filter_values(filter_values)
     cur_map = map_div.children[1].figure
-    # select values in map
-    cur_map.data[0]['selectedpoints'] = selected    
+    if ctx.triggered[0]['prop_id'] != '.':
+        # call triggered by a change in UI param
+        selected = None
+        if ctx.triggered[0]['prop_id'] == 'filter_attrs.value':
+            # change in selected filters
+            update_selected_filters(selected_filters)
+        elif changed_map_options(ctx):
+            # change in map options (state/county, date etc)
+            map_div.children[1].figure = update_map(geo, attribute, date_idx)
+            # new geo, date or attribute, force new filter
+            filters_div = get_filters_div(selected_filters)
+        elif changed_filter_values(ctx):
+            # change in filter slider value
+            selected = update_filter_values(filter_values)
+        # select values in map
+        cur_map.data[0]['selectedpoints'] = selected
+    else:
+        update_selected_filters(selected_filters)
 
     return cur_map, filters_div.children
-    #return cur_map, [html.H5("selecting filters %s"%(str(selected_filters)))] + filters_div.children
+    #return cur_map, [html.H5("selecting filters %s  triggered: %s"%(str(selected_filters), json.dumps(ctx.triggered)))] + filters_div.children
 
 
 # callback to respond to map click
 @app.callback(
     dash.dependencies.Output('Timelines', 'children'),
-    [dash.dependencies.Input('Map', 'clickData')])
-def process_map_click(clickData):
+    [dash.dependencies.Input('Map', 'clickData'),
+     dash.dependencies.Input('timeline_attrs', 'value')])
+def process_timeline_changes(clickData, value):
+    global ts_div
     if current_geo == geo_areas[0]:  # states
         click_state = clickData['points'][0]['location'] if clickData else None
-        return get_timeseries_div(state=click_state)
+        ts_div = get_timeseries_div(value, state=click_state)
     elif current_geo == geo_areas[1]:  # counties
         click_county = clickData['points'][0]['location'] if clickData else None
-        return get_timeseries_div(county=click_county)
-    return json.dumps(clickData, indent=2)
+        ts_div = get_timeseries_div(value, county=click_county)
+    else:
+        update_selected_timelines(value)
+    return ts_div
+    #return json.dumps(clickData, indent=2)
 
 
 if __name__ == '__main__':
