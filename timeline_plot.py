@@ -5,16 +5,16 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 
 
-def timeline_plot(t, values, logy=True, title=None):
+def timeline_plot(t, values, logy=True, title=None, ht=200):
     fig = go.Figure(data=go.Scatter(x=t, y=values))
     if logy:
         fig.update_layout(yaxis_type="log")
     if title:
         fig.update_layout(title_text=title)
     fig.update_layout(
-        margin=dict(l=20, r=20, t=30, b=20),
+        margin=dict(l=20, r=20, t=40, b=10),
         paper_bgcolor="White",
-        height=200
+        height=ht
     )
     return fig
 

@@ -17,9 +17,12 @@ def get_county_plot_data(attr, date_idx):
     return data, data_max, data_min
 
 
-def get_county_plot(attr, date_idx, wd):
+def get_county_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_county_plot_data(attr, date_idx)
-    return county_plot(data[attr], data['fips_str'], data_max, data_min, cmn.attributes[attr]['log'], "Covid-19 Data", wd=wd)
+    return county_plot(data[attr], data['fips_str'], 
+                       data_max, data_min, 
+                       cmn.attributes[attr]['log'], "Covid-19 Data", 
+                       wd=wd, ht=ht)
 
 
 def get_state_plot_data(attr, date_idx):
@@ -30,20 +33,23 @@ def get_state_plot_data(attr, date_idx):
     return data, data_max, data_min
 
 
-def get_state_plot(attr, date_idx, wd):
+def get_state_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_state_plot_data(attr, date_idx)
-    return state_plot(data[attr], data['State'], data_max, data_min, cmn.attributes[attr]['log'], "Covid-19 Data", wd=wd)
+    return state_plot(data[attr], data['State'], 
+                      data_max, data_min, 
+                      cmn.attributes[attr]['log'], "Covid-19 Data", 
+                      wd=wd, ht=ht)
 
 
-def get_map_plot(geo, attr, date_idx, wd):
+def get_map_plot(geo, attr, date_idx, wd, ht):
     cmn.current_attr = attr
     cmn.current_date_idx = date_idx
     cmn.current_geo = geo
 
     if geo == cmn.geo_areas[0]:
-        fig = get_state_plot(attr, date_idx, wd)
+        fig = get_state_plot(attr, date_idx, wd, ht)
     else:
-        fig = get_county_plot(attr, date_idx, wd)
+        fig = get_county_plot(attr, date_idx, wd, ht)
     return fig
 
 
@@ -63,16 +69,9 @@ def get_map_div():
                         value=cmn.geo_areas[0],
                         searchable=False,
                         clearable=False,
-                        style={'height': '30px', 'width': '150px', 'fontSize': '20px'}
+                        style={'height': '38px', 'width': '150px', 'fontSize': '15px'}
                     ),
-                    dcc.Dropdown(
-                        id='attribute',
-                        options=[{'label': cmn.attributes[attr]['name'], 'value': attr} for attr in cmn.attributes.keys()],
-                        value=next(iter(cmn.attributes.keys())),
-                        searchable=False,
-                        clearable=False,
-                        style={'height': '30px', 'width': '200px', 'font-size': '20px'}
-                    ),
+                    cmn.attribute_selector('attribute'),
                 ],
                 className='row',
                 style={'display': 'flex'}
@@ -83,7 +82,8 @@ def get_map_div():
                 figure=get_map_plot(cmn.geo_areas[0], 
                                     next(iter(cmn.attributes.keys())), 
                                     len(cmn.dates) - 1, 
-                                    cmn.map_wd)
+                                    cmn.map_wd,
+                                    cmn.map_ht)
             ),
             dcc.Slider(
                 id='date_slider',
@@ -92,10 +92,10 @@ def get_map_div():
                 max=len(cmn.dates) - 1,
                 step=None,
                 marks=date_ticks,
-                value=len(cmn.dates) - 1
+                value=len(cmn.dates) - 1,
             )
         ],
-        style={'width': cmn.map_wd}
+        style={'width': cmn.map_wd, 'marginBottom': 40},
     )
 
 

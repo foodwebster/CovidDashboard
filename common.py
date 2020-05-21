@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pathlib as pl
+import dash_core_components as dcc
 
 datapath = pl.Path('data')
 
@@ -28,9 +29,24 @@ current_attr = next(iter(attributes.keys()))
 current_ts_mode = timeseries_mode[0]
 
 map_wd = 800
+map_ht = 500
 
-filters_div = map_div = ts_div = None
+filter_wd = 400
+ts_wd = 400
 
+scatter_wd = filter_wd + map_wd
+
+
+scatterplot_div = filters_div = map_div = ts_div = None
+
+
+def get_current_data():
+    if current_geo == geo_areas[0]:
+        df = state_df
+    else:
+        df = county_df
+    return df
+    
 
 def graph_config():
     return {"displaylogo": False,
@@ -38,3 +54,15 @@ def graph_config():
             }
 
 
+def attribute_selector(id_str, default=None, allow_none=False, ht='38px'):
+    options = [{'label': 'None', 'value': 'None'}] if allow_none else []
+    options = options + [{'label': attributes[attr]['name'], 'value': attr} for attr in attributes.keys()]
+    default_val = 'None' if (allow_none and default is None) else (default or next(iter(attributes.keys())))
+    return dcc.Dropdown(
+        id=id_str,
+        options=options,
+        value=default_val,
+        searchable=False,
+        clearable=False,
+        style={'height': ht, 'width': '200px', 'font-size': '15px'}
+    )

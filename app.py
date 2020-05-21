@@ -11,6 +11,7 @@ from timeline_plot import timeline_plot
 from histog_plot import histog_plot
 
 from map_component import get_map_div, update_map
+from scatterplot_component import get_scatterplot_div, scatterplot_figure
 
 cmn.country_df, cmn.state_df, cmn.county_df, cmn.dates = load_data()
 
@@ -82,7 +83,7 @@ def get_filter(attr, date_idx, state, county, enable=True):
                 value=[0, nbins]
             )
         ],
-        style={'width': 400,
+        style={'width': cmn.filter_wd,
                'display': 'block' if enable else 'none'
               }  
     )    
@@ -106,7 +107,7 @@ def get_timeseries_div(attrs, state=None, county=None):
                             config=cmn.graph_config(),
                             figure=get_ts_plot(attr, state, county),
                             style={'display': 'block' if attr in attrs else 'none'}) for attr in cmn.ts_attrs],
-        style={'width': 400}
+        style={'width': cmn.ts_wd}
     )
 
 
@@ -127,15 +128,16 @@ def get_filters_div(selected_filters=[], state=None, county=None):
                 style={'fontSize': '20px'}
             ),
         ] + [get_filter(attr, cmn.current_date_idx, state, county, attr in selected_filters) for attr in cmn.attributes.keys()],
-        style={'width': 400}
+        style={'width': cmn.filter_wd}
     )
 
 
 def get_app_layout():
-    global filters_div, map_div, ts_div
+    global filters_div, map_div, ts_div, scatterplot_div
     filters_div = get_filters_div([[next(iter(cmn.attributes.keys()))]])
     map_div = get_map_div()
     ts_div = get_timeseries_div([cmn.ts_attrs[0], cmn.ts_attrs[-1]])
+    scatterplot_div = get_scatterplot_div()
     return html.Div(
         children=[
             html.H1(children='Covid Dashboard', style={
@@ -149,7 +151,8 @@ def get_app_layout():
                 ],
                 className='row',
                 style={'display': 'flex'}
-            )
+            ),
+            get_scatterplot_div()
         ]
     )
 
@@ -327,6 +330,27 @@ def process_timeline_changes(clickData, value):
     return ts_div
     #return json.dumps(clickData, indent=2)
 
+
+# scatterplot callbacks
+@app.callback(
+    dash.dependencies.Output('Scatterplot', 'figure'),
+    [
+        dash.dependencies.Input('x_attribute', 'value'),
+        dash.dependencies.Input('y_attribute', 'value'),
+        dash.dependencies.Input('color_attribute', 'value'),
+        dash.dependencies.Input('size_attribute', 'value'),
+        dash.dependencies.Input('log_axes', 'value'),
+    ]
+    )
+def update_scatter(xattr, yattr, colorattr, sizeattr, logxy):
+    logx = 'logx' in logxy
+    logy = 'logy' in logxy
+    if colorattr == 'None':
+        colorattr = None
+    if sizeattr == 'None':
+        sizeattr = None
+    return scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy)
+    
 
 if __name__ == '__main__':
     app.run_server(debug=True)

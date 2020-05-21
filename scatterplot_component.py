@@ -7,38 +7,49 @@ import common as cmn
 from scatter_plot import scatter_plot
 
 def get_scatterplot_div():
+    text_style = {'margin-left': '10px', 'margin-right': '10px', 'line-height': '38px'}
     attrs = list(cmn.attributes.keys())
     return html.Div(
         children=[
             html.Div(
+                id='scatterplot_controls',
                 children=[
-                    "X:",
-                    dcc.Dropdown(
-                        id='x_attribute',
-                        options=[{'label': cmn.attributes[attr]['name'], 'value': attr} for attr in cmn.attributes.keys()],
-                        value=next(iter(cmn.attributes.keys())),
-                        searchable=False,
-                        clearable=False,
-                        style={'height': '30px', 'width': '200px', 'font-size': '20px'}
+                    html.P("X:", style=text_style),
+                    cmn.attribute_selector('x_attribute'),                    
+                    html.P("Y:", style=text_style),
+                    cmn.attribute_selector('y_attribute', default=attrs[-1]),
+                    dcc.Checklist(
+                        id='log_axes',
+                        options=[
+                            {'label': 'Log x', 'value': 'logx'},
+                            {'label': 'Log y', 'value': 'logy'},
+                        ],
+                        value=[],
+                        style={'margin-left': '10px', 'margin-right': '10px'}
                     ),
-                    
-                    "Y:",
-                    dcc.Dropdown(
-                        id='y_attribute',
-                        options=[{'label': cmn.attributes[attr]['name'], 'value': attr} for attr in cmn.attributes.keys()],
-                        value=next(iter(cmn.attributes.keys())),
-                        searchable=False,
-                        clearable=False,
-                        style={'height': '30px', 'width': '200px', 'font-size': '20px'}
-                    ),
+                    html.P("Size:", style=text_style),
+                    cmn.attribute_selector('size_attribute', allow_none=True),
+                    html.P("Color:", style=text_style),
+                    cmn.attribute_selector('color_attribute', allow_none=True),
                 ],
                 className='row',
-                style={'display': 'flex'}
+                style={'display': 'flex', 'margin-top': '5px'}
             ),
             dcc.Graph(
                 id='Scatterplot',
                 config=cmn.graph_config(),
-                figure=scatter_plot(cmn.county_df, attrs[0], attrs[-1], wd=cmn.map_wd)
+                figure=scatterplot_figure(attrs[0], attrs[-1], None, None, False, False)
             ),
-        ]
+        ],
+        style={"border-top":"1px black solid", 'width': cmn.scatter_wd}
     )
+
+
+def scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy):
+    df = cmn.get_current_data()
+    df = df[df.index == cmn.dates[cmn.current_date_idx]]
+    return scatter_plot(df, xattr, yattr,
+                        szattr=sizeattr, colorattr=colorattr,
+                        logx=logx, logy=logy,
+                        wd=cmn.scatter_wd)
+
