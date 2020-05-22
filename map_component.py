@@ -13,7 +13,7 @@ def get_county_plot_data(attr, date_idx):
     # get max, min before selecting desired date, so color scale is invariant
     data_max = data[attr].max()
     data_min = data[attr].min()
-    data = data.loc[cmn.dates[cmn.date_idx]]
+    data = data.loc[cmn.dates[date_idx]]
     return data, data_max, data_min
 
 
@@ -66,7 +66,7 @@ def get_map_div():
                     dcc.Dropdown(
                         id='geo',
                         options=[{'label': val, 'value': val} for val in cmn.geo_areas],
-                        value=cmn.geo_areas[0],
+                        value=cmn.current_geo,
                         searchable=False,
                         clearable=False,
                         style={'height': '38px', 'width': '150px', 'fontSize': '15px'}
@@ -79,7 +79,7 @@ def get_map_div():
             dcc.Graph(
                 id='Map',
                 config=cmn.graph_config(),
-                figure=get_map_plot(cmn.geo_areas[0], 
+                figure=get_map_plot(cmn.current_geo, 
                                     next(iter(cmn.attributes.keys())), 
                                     len(cmn.dates) - 1, 
                                     cmn.map_wd,
@@ -99,9 +99,9 @@ def get_map_div():
     )
 
 
-def update_map(geo, attribute, date_idx, map_wd=800):
-    attr = cmn.attribute or next(iter(cmn.attributes.keys()))
+def update_map(geo, attribute, date_idx):
+    attr = attribute or next(iter(cmn.attributes.keys()))
     geo = geo or cmn.geo_areas[0]
-    return get_map_plot(geo, attr, date_idx, map_wd)
+    return get_map_plot(geo, attr, date_idx, cmn.map_wd, cmn.map_ht)
 
 

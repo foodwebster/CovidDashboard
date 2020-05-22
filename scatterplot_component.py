@@ -45,9 +45,9 @@ def get_scatterplot_div():
     )
 
 
-def scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy):
-    df = cmn.get_current_data()
-    df = df[df.index == cmn.dates[cmn.current_date_idx]]
+def scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo=None, date_idx=None):
+    df = cmn.get_current_data(geo)
+    df = df[df.index == cmn.dates[date_idx or cmn.current_date_idx]]
     return scatter_plot(df, xattr, yattr,
                         szattr=sizeattr, colorattr=colorattr,
                         logx=logx, logy=logy,

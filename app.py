@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import dash
 import dash_auth
 import dash_core_components as dcc
@@ -309,7 +310,7 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
         update_selected_filters(selected_filters)
 
     return cur_map, filters_div.children
-    #return cur_map, [html.H5("selected %s  triggered: %s"%(str(selected), json.dumps(ctx.triggered)))] + filters_div.children
+    #return cur_map, [html.H5("%s, geo %s, attribute %s, date_idx %s"%(json.dumps(ctx.triggered), str(geo), str(attribute), str(date_idx)))] + filters_div.children
 
 
 # callback to respond to map click
@@ -340,16 +341,18 @@ def process_timeline_changes(clickData, value):
         dash.dependencies.Input('color_attribute', 'value'),
         dash.dependencies.Input('size_attribute', 'value'),
         dash.dependencies.Input('log_axes', 'value'),
+        dash.dependencies.Input('geo', 'value'),
+        dash.dependencies.Input('date_slider', 'value'),
     ]
     )
-def update_scatter(xattr, yattr, colorattr, sizeattr, logxy):
+def update_scatter(xattr, yattr, colorattr, sizeattr, logxy, geo, date):
     logx = 'logx' in logxy
     logy = 'logy' in logxy
     if colorattr == 'None':
         colorattr = None
     if sizeattr == 'None':
         sizeattr = None
-    return scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy)
+    return scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo, date)
     
 
 if __name__ == '__main__':

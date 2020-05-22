@@ -23,7 +23,7 @@ geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']
    
 country_df = state_df = county_df = dates = None 
-current_geo = geo_areas[0]
+current_geo = geo_areas[1]
 current_date_idx = None
 current_attr = next(iter(attributes.keys()))
 current_ts_mode = timeseries_mode[0]
@@ -40,8 +40,9 @@ scatter_wd = filter_wd + map_wd
 scatterplot_div = filters_div = map_div = ts_div = None
 
 
-def get_current_data():
-    if current_geo == geo_areas[0]:
+def get_current_data(geo=None):
+    geo = geo or current_geo
+    if geo == geo_areas[0]:
         df = state_df
     else:
         df = county_df
