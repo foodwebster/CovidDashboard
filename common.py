@@ -34,7 +34,8 @@ map_ht = 500
 filter_wd = 400
 ts_wd = 400
 
-scatter_wd = filter_wd + map_wd
+scatter_wd = map_wd
+#scatter_wd = filter_wd + map_wd
 
 
 scatterplot_div = filters_div = map_div = ts_div = None

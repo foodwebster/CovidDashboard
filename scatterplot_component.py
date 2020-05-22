@@ -14,26 +14,37 @@ def get_scatterplot_div():
             html.Div(
                 id='scatterplot_controls',
                 children=[
-                    html.P("X:", style=text_style),
-                    cmn.attribute_selector('x_attribute'),                    
-                    html.P("Y:", style=text_style),
-                    cmn.attribute_selector('y_attribute', default=attrs[-1]),
-                    dcc.Checklist(
-                        id='log_axes',
-                        options=[
-                            {'label': 'Log x', 'value': 'logx'},
-                            {'label': 'Log y', 'value': 'logy'},
+                    html.Div(
+                        children=[
+                            html.P("X:", style={'margin-left': '29px', 'margin-right': '10px', 'line-height': '38px'}),
+                            cmn.attribute_selector('x_attribute'),                    
+                            html.P("Y:", style={'margin-left': '38px', 'margin-right': '10px', 'line-height': '38px'}),
+                            cmn.attribute_selector('y_attribute', default=attrs[-1]),
+                            dcc.Checklist(
+                                id='log_axes',
+                                options=[
+                                    {'label': 'Log x', 'value': 'logx'},
+                                    {'label': 'Log y', 'value': 'logy'},
+                                ],
+                                value=[],
+                                style={'margin-left': '10px', 'margin-right': '10px'}
+                            ),
                         ],
-                        value=[],
-                        style={'margin-left': '10px', 'margin-right': '10px'}
+                        className='row',
+                        style={'display': 'flex'}
                     ),
-                    html.P("Size:", style=text_style),
-                    cmn.attribute_selector('size_attribute', allow_none=True),
-                    html.P("Color:", style=text_style),
-                    cmn.attribute_selector('color_attribute', allow_none=True),
+                    html.Div(
+                        children=[
+                            html.P("Size:", style=text_style),
+                            cmn.attribute_selector('size_attribute', allow_none=True),
+                            html.P("Color:", style=text_style),
+                            cmn.attribute_selector('color_attribute', allow_none=True),
+                        ],
+                        className='row',
+                        style={'display': 'flex'}
+                    )
                 ],
-                className='row',
-                style={'display': 'flex', 'margin-top': '5px'}
+                style={'margin-top': '5px'}
             ),
             dcc.Graph(
                 id='Scatterplot',

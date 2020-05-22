@@ -54,11 +54,6 @@ def get_map_plot(geo, attr, date_idx, wd, ht):
 
 
 def get_map_div():
-    # build mapping between index and date display data 
-    # only display one date per week, include styling info
-    date_ticks = dict(zip(range(len(cmn.dates)), [{'label': str(d.date()),
-                                             'style': {"transform": "translate(-45px, 7px) rotate(-45deg)"}
-                                             } if d.dayofweek==1 else '' for d in cmn.dates]))
     return html.Div(
         children=[
             html.Div(
@@ -85,15 +80,6 @@ def get_map_div():
                                     cmn.map_wd,
                                     cmn.map_ht)
             ),
-            dcc.Slider(
-                id='date_slider',
-                updatemode='mouseup',
-                min=0,
-                max=len(cmn.dates) - 1,
-                step=None,
-                marks=date_ticks,
-                value=len(cmn.dates) - 1,
-            )
         ],
         style={'width': cmn.map_wd, 'marginBottom': 40},
     )

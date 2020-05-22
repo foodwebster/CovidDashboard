@@ -133,6 +133,35 @@ def get_filters_div(selected_filters=[], state=None, county=None):
     )
 
 
+def get_time_filtered_tab_div(map_div, scatterplot_div):
+    '''
+    build div for tabbed plots with time filter slider below the plots
+    '''
+    # build mapping between index and date display data 
+    # only display one date per week, include styling info
+    date_ticks = dict(zip(range(len(cmn.dates)), [{'label': str(d.date()),
+                                             'style': {"transform": "translate(-45px, 7px) rotate(-45deg)"}
+                                             } if d.dayofweek==1 else '' for d in cmn.dates]))
+    return html.Div(
+        children=[
+            dcc.Tabs([dcc.Tab(label='Map', children=[map_div]),
+                      dcc.Tab(label='Scatterplot', children=[scatterplot_div])
+                     ]
+            ),
+            dcc.Slider(
+                id='date_slider',
+                updatemode='mouseup',
+                min=0,
+                max=len(cmn.dates) - 1,
+                step=None,
+                marks=date_ticks,
+                value=len(cmn.dates) - 1,
+            )
+        ],
+        style={'width': cmn.map_wd, 'marginBottom': 40, 'marginLeft': 10, 'marginRight': 10},
+    )
+
+
 def get_app_layout():
     global filters_div, map_div, ts_div, scatterplot_div
     filters_div = get_filters_div([[next(iter(cmn.attributes.keys()))]])
@@ -147,13 +176,12 @@ def get_app_layout():
             html.Div(
                 children=[
                     filters_div,
-                    map_div,
+                    get_time_filtered_tab_div(map_div, scatterplot_div),
                     ts_div
                 ],
                 className='row',
                 style={'display': 'flex'}
             ),
-            get_scatterplot_div()
         ]
     )
 
@@ -263,6 +291,12 @@ def update_selected_timelines(values):
     ts_div.children[1].value = values
 
 
+def changed_filter_values(ctx):
+    changed = ctx.triggered[0]['prop_id']
+    ids = ['filter_slider_'+attr+'.value' for attr in cmn.attributes.keys()]
+    return changed in ids
+    
+
 # callback for dropdowns and slider to display correct map (state/county, attribute, date)
 @app.callback(
     [dash.dependencies.Output('Map', 'figure'),
@@ -276,11 +310,6 @@ def update_selected_timelines(values):
     )
 def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
 
-    def changed_filter_values(ctx):
-        changed = ctx.triggered[0]['prop_id']
-        ids = ['filter_slider_'+attr+'.value' for attr in cmn.attributes.keys()]
-        return changed in ids
-    
     def changed_map_options(ctx):
         changed = ctx.triggered[0]['prop_id']
         ids = [val+'.value' for val in ['geo', 'attribute', 'date_slider']]
@@ -304,7 +333,7 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
         elif changed_filter_values(ctx):
             # change in filter slider value
             selected = update_filter_values(filter_values)
-        # select values in map
+        # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
     else:
         update_selected_filters(selected_filters)
@@ -343,17 +372,20 @@ def process_timeline_changes(clickData, value):
         dash.dependencies.Input('log_axes', 'value'),
         dash.dependencies.Input('geo', 'value'),
         dash.dependencies.Input('date_slider', 'value'),
-    ]
+    ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
     )
-def update_scatter(xattr, yattr, colorattr, sizeattr, logxy, geo, date):
+def update_scatter(xattr, yattr, colorattr, sizeattr, logxy, geo, date, *filter_values):
     logx = 'logx' in logxy
     logy = 'logy' in logxy
     if colorattr == 'None':
         colorattr = None
     if sizeattr == 'None':
         sizeattr = None
-    return scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo, date)
-    
+    fig = scatterplot_div.children[1].figure = scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo, date)
+    # change in filter slider value
+    selected = update_filter_values(filter_values)
+    fig.data[0]['selectedpoints'] = selected
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
