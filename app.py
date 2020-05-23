@@ -112,7 +112,7 @@ def get_timeseries_div(attrs, state=None, county=None):
     )
 
 
-def get_filters_div(selected_filters=[], state=None, county=None):
+def get_filters_div(selected_filters):
     return html.Div(
         id='Filters',
         children=[
@@ -128,7 +128,7 @@ def get_filters_div(selected_filters=[], state=None, county=None):
                 placeholder="Select filter attributes",
                 style={'fontSize': '20px'}
             ),
-        ] + [get_filter(attr, cmn.current_date_idx, state, county, attr in selected_filters) for attr in cmn.attributes.keys()],
+        ] + [get_filter(attr, cmn.current_date_idx, None, None, attr in selected_filters) for attr in cmn.attributes.keys()],
         style={'width': cmn.filter_wd}
     )
 
@@ -193,7 +193,6 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash()
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 auth = dash_auth.BasicAuth(
@@ -297,7 +296,7 @@ def changed_filter_values(ctx):
     return changed in ids
     
 
-# callback for dropdowns and slider to display correct map (state/county, attribute, date)
+# callback for dropdowns display correct map (state/county, attribute, date), date and filters
 @app.callback(
     [dash.dependencies.Output('Map', 'figure'),
      dash.dependencies.Output('Filters', 'children')],
@@ -328,11 +327,11 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
         elif changed_map_options(ctx):
             # change in map options (state/county, date etc)
             cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
-            # new geo, date or attribute, force new filter
+            # new geo, date or attribute, force new filters
             filters_div = get_filters_div(selected_filters)
-        elif changed_filter_values(ctx):
+        #elif changed_filter_values(ctx):
             # change in filter slider value
-            selected = update_filter_values(filter_values)
+        selected = update_filter_values(filter_values)
         # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
     else:
@@ -374,14 +373,17 @@ def process_timeline_changes(clickData, value):
         dash.dependencies.Input('date_slider', 'value'),
     ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
     )
-def update_scatter(xattr, yattr, colorattr, sizeattr, logxy, geo, date, *filter_values):
+def update_scatter(xattr, yattr, colorattr, sizeattr, logxy, geo, date_idx, *filter_values):
     logx = 'logx' in logxy
     logy = 'logy' in logxy
     if colorattr == 'None':
         colorattr = None
     if sizeattr == 'None':
         sizeattr = None
-    fig = scatterplot_div.children[1].figure = scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo, date)
+    fig = scatterplot_div.children[1].figure = scatterplot_figure(xattr, yattr, 
+                                                                  colorattr, sizeattr, 
+                                                                  logx, logy, 
+                                                                  geo, date_idx)
     # change in filter slider value
     selected = update_filter_values(filter_values)
     fig.data[0]['selectedpoints'] = selected
