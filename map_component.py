@@ -9,7 +9,7 @@ from state_plot import state_plot
 
 
 def get_county_plot_data(attr, date_idx):
-    data = cmn.county_df[['fips_str', attr]]
+    data = cmn.county_df[['fips_str', attr, 'State', 'County Name']]
     # get max, min before selecting desired date, so color scale is invariant
     data_max = data[attr].max()
     data_min = data[attr].min()
@@ -19,7 +19,7 @@ def get_county_plot_data(attr, date_idx):
 
 def get_county_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_county_plot_data(attr, date_idx)
-    return county_plot(data[attr], data['fips_str'], 
+    return county_plot(data, attr, 'fips_str', cmn.attributes[attr]['name'],
                        data_max, data_min, 
                        cmn.attributes[attr]['log'], "Covid-19 Data", 
                        wd=wd, ht=ht)
@@ -35,7 +35,7 @@ def get_state_plot_data(attr, date_idx):
 
 def get_state_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_state_plot_data(attr, date_idx)
-    return state_plot(data[attr], data['State'], 
+    return state_plot(data, attr, 'State', cmn.attributes[attr]['name'],
                       data_max, data_min, 
                       cmn.attributes[attr]['log'], "Covid-19 Data", 
                       wd=wd, ht=ht)

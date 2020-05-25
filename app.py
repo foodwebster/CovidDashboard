@@ -338,7 +338,7 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
         update_selected_filters(selected_filters)
 
     return cur_map, filters_div.children
-    #return cur_map, [html.H5("%s, geo %s, attribute %s, date_idx %s"%(json.dumps(ctx.triggered), str(geo), str(attribute), str(date_idx)))] + filters_div.children
+    #return cur_map, [html.H5("%s, filters: %s, values: %s"%(json.dumps(ctx.triggered), str(selected_filters), str(filter_values)))] + filters_div.children
 
 
 # callback to respond to map click

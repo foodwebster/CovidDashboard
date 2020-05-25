@@ -10,26 +10,30 @@ from plotly.offline import plot
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
-def county_plot(data, locs, data_max, data_min, log_data, title, wd=1000, ht=600):
+def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
     
     fig = go.Figure()
     if log_data:
-        min_val = data.min()/10.0 or 1.0
-        plot_data = np.log10(data + min_val)
+        min_val = df[x_attr].min()/10.0 or 1.0
+        plot_data = np.log10(df[x_attr] + min_val)
         plot_max = np.log10(data_max + min_val)
         plot_min = np.log10(data_min + min_val)
+        tickprefix = '10^'
     else:
-        plot_data = data
+        plot_data = df[x_attr]
         plot_max = data_max
         plot_min = data_min
+        tickprefix = ''
     fig.add_trace(
-        go.Choroplethmapbox(z=plot_data, geojson=counties, locations=locs,
+        go.Choroplethmapbox(z=plot_data, geojson=counties, locations=df[y_attr],
                            colorscale="Viridis",
                            zmin=plot_min,
                            zmax=plot_max,
                            marker_opacity=1.0,
                            visible=True, 
-                           text=data
+                           text=df.State + ' ' + df['County Name'] + '<br>' + attr_name + ': ' + df[x_attr].astype(str),
+                           hovertemplate = '<br>%{text}<extra></extra>',
+                           colorbar={'tickprefix': tickprefix}
                           )        
     ) 
     fig.update_layout(mapbox_style='white-bg', # "carto-positron",

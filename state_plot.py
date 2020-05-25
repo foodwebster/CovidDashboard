@@ -5,32 +5,37 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.offline import plot
 
-def state_plot(data, locs, data_max, data_min, log_data, title, wd=1000, ht=600):
+def state_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
     fig = go.Figure()
     if log_data:
-        min_val = data.min()/10.0 or 1.0
-        plot_data = np.log10(data + min_val)
+        min_val = df[x_attr].min()/10.0 or 1.0
+        plot_data = np.log10(df[x_attr] + min_val)
         plot_max = np.log10(data_max + min_val)
         plot_min = np.log10(data_min + min_val)
+        tickprefix = '10^'
     else:
-        plot_data = data
+        plot_data = df[x_attr]
         plot_max = data_max
         plot_min = data_min
+        tickprefix = ''
     fig = go.Figure(data=go.Choropleth(
-        locations=locs, # Spatial coordinates
+        locations=df[y_attr], # Spatial coordinates
         z=plot_data, # Data to be color-coded
         locationmode='USA-states', # set of locations match entries in `locations`
         colorscale="Viridis",
         zmin=plot_min,
         zmax=plot_max,
         customdata=plot_data,
+        text=df.State + '<br>' + attr_name + ': ' + df[x_attr].astype(str),
+        hovertemplate = '<br>%{text}<extra></extra>',
+        colorbar={'tickprefix': tickprefix}
         #marker_opacity=0.5,
     ))
     fig.update_layout(
         margin={"r":0,"t":0,"l":0,"b":0},
         title_text = title,
         geo_scope='usa', # limit map scope to USA
-        width=wd, height=ht,
+        width=wd, height=ht
     )
     return fig
 
