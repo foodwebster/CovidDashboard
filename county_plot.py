@@ -7,6 +7,8 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.offline import plot
 
+import common as cmn
+
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
@@ -31,7 +33,9 @@ def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, tit
                            zmax=plot_max,
                            marker_opacity=1.0,
                            visible=True, 
-                           text=df.State + ' ' + df['County Name'] + '<br>' + attr_name + ': ' + df[x_attr].astype(str),
+                           text=df.State + ' ' + df['County Name'] + '<br>' 
+                                         + attr_name + ': ' + cmn.series_as_string(df[x_attr]) + '<br>'
+                                         + 'Population' + ': ' + cmn.series_as_string(df.population),
                            hovertemplate = '<br>%{text}<extra></extra>',
                            colorbar={'tickprefix': tickprefix}
                           )        

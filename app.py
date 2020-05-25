@@ -93,9 +93,20 @@ def get_timeseries_div(attrs, state=None, county=None):
     return html.Div(
         id='Timelines',
         children=[
-            html.H3('Timelines', style={
-                'textAlign': 'left',
-            }),
+            html.Div(
+                children=[
+                    html.H3('Timelines', style={
+                        'textAlign': 'left',
+                        }),
+                    html.Button('Reset', 
+                                id='timeline_reset', 
+                                n_clicks=0, 
+                                title='Reset to US timeline', 
+                                style={'margin-left': 'auto', 'margin-top': '15px', 'font-size': '12px'})
+                ],
+                className='row',
+                style={'display': 'flex'}
+            ),
             dcc.Dropdown(
                 id='timeline_attrs',
                 options=[{'label': cmn.attributes[val]['name'], 'value': val} for val in cmn.ts_attrs],
@@ -341,24 +352,27 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
     #return cur_map, [html.H5("%s, filters: %s, values: %s"%(json.dumps(ctx.triggered), str(selected_filters), str(filter_values)))] + filters_div.children
 
 
-# callback to respond to map click
+# callback to update timelines in response to map click or reset button
 @app.callback(
     dash.dependencies.Output('Timelines', 'children'),
     [dash.dependencies.Input('Map', 'clickData'),
-     dash.dependencies.Input('timeline_attrs', 'value')])
-def process_timeline_changes(clickData, value):
+     dash.dependencies.Input('timeline_attrs', 'value'),
+     dash.dependencies.Input('timeline_reset', 'n_clicks')])
+def process_timeline_changes(clickData, value, reset):
     global ts_div
-    if cmn.current_geo == cmn.geo_areas[0]:  # states
-        click_state = clickData['points'][0]['location'] if clickData else None
-        ts_div = get_timeseries_div(value, state=click_state)
-    elif cmn.current_geo == cmn.geo_areas[1]:  # counties
-        click_county = clickData['points'][0]['location'] if clickData else None
-        ts_div = get_timeseries_div(value, county=click_county)
+    ctx = dash.callback_context
+    if ctx.triggered[0]['prop_id'] == 'timeline_reset.n_clicks':
+        ts_div = get_timeseries_div(value)
     else:
-        update_selected_timelines(value)
+        if cmn.current_geo == cmn.geo_areas[0]:  # states
+            click_state = clickData['points'][0]['location'] if clickData else None
+            ts_div = get_timeseries_div(value, state=click_state)
+        elif cmn.current_geo == cmn.geo_areas[1]:  # counties
+            click_county = clickData['points'][0]['location'] if clickData else None
+            ts_div = get_timeseries_div(value, county=click_county)
+        else:
+            update_selected_timelines(value)
     return ts_div
-    #return json.dumps(clickData, indent=2)
-
 
 # scatterplot callbacks
 @app.callback(

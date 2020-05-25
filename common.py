@@ -68,3 +68,8 @@ def attribute_selector(id_str, default=None, allow_none=False, ht='38px'):
         clearable=False,
         style={'height': ht, 'width': '200px', 'font-size': '15px'}
     )
+
+
+def series_as_string(vals):
+    return vals.apply(lambda x: str(int(x)) if (type(x) == int or x.is_integer()) else '%.2f'%x)
+ 

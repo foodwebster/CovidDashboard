@@ -9,7 +9,7 @@ from state_plot import state_plot
 
 
 def get_county_plot_data(attr, date_idx):
-    data = cmn.county_df[['fips_str', attr, 'State', 'County Name']]
+    data = cmn.county_df[['fips_str', attr, 'State', 'County Name', 'population']]
     # get max, min before selecting desired date, so color scale is invariant
     data_max = data[attr].max()
     data_min = data[attr].min()

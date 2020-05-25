@@ -5,6 +5,8 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.offline import plot
 
+import common as cmn
+
 def state_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
     fig = go.Figure()
     if log_data:
@@ -26,7 +28,7 @@ def state_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, titl
         zmin=plot_min,
         zmax=plot_max,
         customdata=plot_data,
-        text=df.State + '<br>' + attr_name + ': ' + df[x_attr].astype(str),
+        text=df.State + '<br>' + attr_name + ': ' + cmn.series_as_string(df[x_attr]),
         hovertemplate = '<br>%{text}<extra></extra>',
         colorbar={'tickprefix': tickprefix}
         #marker_opacity=0.5,
