@@ -166,7 +166,7 @@ def get_filters_div(selected_filters):
             dcc.Dropdown(
                 id='filter_attrs',
                 options=[{'label': cmn.attributes[val]['name'], 'value': val} for val in cmn.attributes.keys()],
-                value=next(iter(cmn.attributes.keys())),
+                value=selected_filters,
                 searchable=False,
                 multi=True,
                 placeholder="Select filter attributes",
@@ -205,7 +205,7 @@ def get_time_filtered_tab_div(divs):
 
 def get_app_layout():
     global filters_div, map_div, ts_div, scatterplot_div
-    filters_div = get_filters_div([[next(iter(cmn.attributes.keys()))]])
+    filters_div = get_filters_div([next(iter(cmn.attributes.keys()))])
     map_div = get_map_div()
     ts_div = get_timeseries_div([cmn.ts_attrs[0], cmn.ts_attrs[-1]])
     scatterplot_div = get_scatterplot_div()
@@ -337,10 +337,9 @@ def changed_filter_values(ctx):
     return changed in ids
     
 
-# callback for dropdowns display correct map (state/county, attribute, date), date and filters
+# callback to redisplay map and selection
 @app.callback(
-    [dash.dependencies.Output('Map', 'figure'),
-     dash.dependencies.Output('Filters', 'children')],
+    dash.dependencies.Output('Map', 'figure'),
     [
         dash.dependencies.Input('geo', 'value'),
         dash.dependencies.Input('attribute', 'value'),
@@ -348,7 +347,39 @@ def changed_filter_values(ctx):
         dash.dependencies.Input('filter_attrs', 'value'),
     ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
     )
-def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
+def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
+
+    def changed_map_options(ctx):
+        changed = ctx.triggered[0]['prop_id']
+        ids = [val+'.value' for val in ['geo', 'attribute', 'date_slider']]
+        return changed in ids    
+    
+    global filters_div
+    ctx = dash.callback_context
+    
+    selected = None
+    cur_map = map_div.children[1].figure
+    if ctx.triggered[0]['prop_id'] != '.':
+        if changed_map_options(ctx):
+            # change in map options (state/county, date etc)
+            cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
+        selected = update_filter_values(filter_values)
+        # select values in map and scatterplot
+        cur_map.data[0]['selectedpoints'] = selected
+
+    return cur_map
+
+
+# callback for dropdowns display correct map (state/county, attribute, date), date and filters
+@app.callback(
+    dash.dependencies.Output('Filters', 'children'),
+    [
+        dash.dependencies.Input('geo', 'value'),
+        dash.dependencies.Input('date_slider', 'value'),
+        dash.dependencies.Input('filter_attrs', 'value'),
+    ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
+    )
+def update_filters(geo, date_idx, selected_filters, *filter_values):
 
     def changed_map_options(ctx):
         changed = ctx.triggered[0]['prop_id']
@@ -366,8 +397,6 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
             # change in selected filters
             update_selected_filters(selected_filters)
         elif changed_map_options(ctx):
-            # change in map options (state/county, date etc)
-            cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
             # new geo, date or attribute, force new filters
             filters_div = get_filters_div(selected_filters)
         #elif changed_filter_values(ctx):
@@ -378,8 +407,8 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
     else:
         update_selected_filters(selected_filters)
 
-    return cur_map, filters_div.children
-    #return cur_map, [html.H5("%s, filters: %s, values: %s"%(json.dumps(ctx.triggered), str(selected_filters), str(filter_values)))] + filters_div.children
+    return filters_div.children
+    #return [html.H5("%s, filters: %s, values: %s"%(json.dumps(ctx.triggered), str(selected_filters), str(filter_values)))] + filters_div.children
 
 
 # callback to update timelines in response to map click or reset button
