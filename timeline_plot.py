@@ -12,7 +12,7 @@ def timeline_plot(t, values, logy=True, title=None, ht=200):
     if title:
         fig.update_layout(title_text=title)
     fig.update_layout(
-        margin=dict(l=20, r=20, t=40, b=10),
+        margin=dict(l=20, r=20, t=10, b=10),
         paper_bgcolor="White",
         height=ht
     )

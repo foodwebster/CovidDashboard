@@ -8,8 +8,16 @@ from county_plot import county_plot
 from state_plot import state_plot
 
 
+def get_init_attr():
+    return next(iter(cmn.attributes.keys()))
+    #return list(cmn.attributes.keys())[-1]
+    
+
 def get_county_plot_data(attr, date_idx):
-    data = cmn.county_df[['fips_str', attr, 'State', 'County Name', 'population']]
+    attrs = ['fips_str', attr, 'State', 'County Name']
+    if attr != 'population':
+        attrs += ['population']
+    data = cmn.county_df[attrs]
     # get max, min before selecting desired date, so color scale is invariant
     data_max = data[attr].max()
     data_min = data[attr].min()
@@ -26,7 +34,10 @@ def get_county_plot(attr, date_idx, wd, ht):
 
 
 def get_state_plot_data(attr, date_idx):
-    data = cmn.state_df[['State', attr]]
+    attrs = [attr, 'State']
+    if attr != 'population':
+        attrs += ['population']
+    data = cmn.state_df[attrs]
     data_max = data[attr].max()
     data_min = data[attr].min()
     data = data.loc[cmn.dates[date_idx]]
@@ -75,7 +86,7 @@ def get_map_div():
                 id='Map',
                 config=cmn.graph_config(),
                 figure=get_map_plot(cmn.current_geo, 
-                                    next(iter(cmn.attributes.keys())), 
+                                    get_init_attr(), 
                                     len(cmn.dates) - 1, 
                                     cmn.map_wd,
                                     cmn.map_ht)
@@ -86,7 +97,7 @@ def get_map_div():
 
 
 def update_map(geo, attribute, date_idx):
-    attr = attribute or next(iter(cmn.attributes.keys()))
+    attr = attribute or get_init_attr()
     geo = geo or cmn.geo_areas[0]
     return get_map_plot(geo, attr, date_idx, cmn.map_wd, cmn.map_ht)
 

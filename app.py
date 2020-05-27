@@ -16,41 +16,76 @@ from scatterplot_component import get_scatterplot_div, scatterplot_figure
 
 cmn.country_df, cmn.state_df, cmn.county_df, cmn.dates = load_data()
 
+
+
 cmn.current_date_idx = len(cmn.dates) - 1
 
-def get_timeline_plot(dates, values, logy, title):
+def get_timeline_plot(dates, values, logy):
+    values = values.fillna(values.mean())
     return timeline_plot(dates, 
                          values, 
                          logy=logy,
-                         title=title)
+                         title=None)
 
 
-def get_ts_plot(attr, state, county):
+def get_ts_plot(attr, state, county, logy):
     '''
     plot_type: 0 - pandemic data, 1 - movement data
     one or none of state, county should be set
     '''
-    logy = cmn.attributes[attr]['log']
     if state is not None:
         sdf = cmn.state_df[cmn.state_df.State == state]
         return get_timeline_plot(sdf.index, 
                                  sdf[attr], 
                                  logy,
-                                 state + " " + cmn.attributes[attr]['name']
                                 )
     elif county is not None:
         cdf = cmn.county_df[cmn.county_df.fips_str == county]
         return get_timeline_plot(cdf.index, 
                                  cdf[attr], 
                                  logy,
-                                 county + " " + cmn.attributes[attr]['name']
                                 )
     else:
         return get_timeline_plot(cmn.country_df.index, 
                                  cmn.country_df[attr], 
                                  logy,
-                                 "US " + cmn.attributes[attr]['name']
                                  )
+
+def get_timeline(attr, state, county, show, logy):
+    
+    if state is not None:
+        title = state + " - " + cmn.attributes[attr]['name']
+    elif county is not None:
+        cdf = cmn.county_df[cmn.county_df.fips_str == county]
+        title = cdf.iloc[0]['County Name'] + " " + cdf.iloc[0]['State'] + ' - ' + cmn.attributes[attr]['name']
+    else:
+        title = "US - " + cmn.attributes[attr]['name']
+    logy = 'logy' in logy if logy is not None else cmn.attributes[attr]['log']
+    return html.Div(
+        children=[
+            html.Div(children=[
+                        html.P(title, style={'margin-left': '10px', 'margin-right': '20px', 'line-height': '20px'}),
+                        dcc.Checklist(
+                            id='timeline_logy_' + attr,
+                            options=[
+                                {'label': 'Log y', 'value': 'logy'},
+                            ],
+                            value=['logy'] if logy else [],
+                            # only display log checkbox for attributes that allow log axis
+                            style={'margin-left': '10px', 'margin-right': '10px'} if cmn.attributes[attr]['log'] else {'display': 'none'}
+                        ), 
+                     ],
+                     className='row',
+                     style={'display': 'flex'}
+            ),
+            dcc.Graph(id='timeline_' + attr,
+                      config=cmn.graph_config(),
+                      figure=get_ts_plot(attr, state, county, logy),
+                      style={'margin-top': '0px'}
+            )      
+        ],
+        style={'display': 'block' if show else 'none', 'margin-top': '10px'}
+    )    
 
 def get_histog_plot(attr, date_idx, state, county):
     '''
@@ -58,10 +93,10 @@ def get_histog_plot(attr, date_idx, state, county):
     '''
     if cmn.current_geo == cmn.geo_areas[0]:
         data = cmn.state_df.loc[cmn.dates[date_idx]]
-        return histog_plot(data[attr], xlabel=cmn.attributes[attr]['name'])
     else:
         data = cmn.county_df.loc[cmn.dates[date_idx]]
-        return histog_plot(data[attr], xlabel=cmn.attributes[attr]['name'])
+    values = data.loc[~data[attr].isnull().to_numpy(), attr]
+    return histog_plot(values, xlabel=cmn.attributes[attr]['name'])
 
 
 def get_filter(attr, date_idx, state, county, enable=True):
@@ -89,7 +124,7 @@ def get_filter(attr, date_idx, state, county, enable=True):
               }  
     )    
 
-def get_timeseries_div(attrs, state=None, county=None):
+def get_timeseries_div(attrs, logy=None, state=None, county=None):
     return html.Div(
         id='Timelines',
         children=[
@@ -102,7 +137,7 @@ def get_timeseries_div(attrs, state=None, county=None):
                                 id='timeline_reset', 
                                 n_clicks=0, 
                                 title='Reset to US timeline', 
-                                style={'margin-left': 'auto', 'margin-top': '15px', 'font-size': '12px'})
+                                style={'marginLeft': 'auto', 'marginTop': '15px', 'fontSize': '12px'})
                 ],
                 className='row',
                 style={'display': 'flex'}
@@ -115,10 +150,8 @@ def get_timeseries_div(attrs, state=None, county=None):
                 multi=True,
                 placeholder="Select timeline attributes",
                 style={'fontSize': '20px'}
-            )] + [dcc.Graph(id='timeline_' + attr,
-                            config=cmn.graph_config(),
-                            figure=get_ts_plot(attr, state, county),
-                            style={'display': 'block' if attr in attrs else 'none'}) for attr in cmn.ts_attrs],
+            )
+        ] + [get_timeline(attr, state, county, attr in attrs, logy[idx] if logy else None) for idx, attr in enumerate(cmn.ts_attrs)],
         style={'width': cmn.ts_wd}
     )
 
@@ -137,14 +170,14 @@ def get_filters_div(selected_filters):
                 searchable=False,
                 multi=True,
                 placeholder="Select filter attributes",
-                style={'fontSize': '20px'}
+                style={'fontSize': '18px'}
             ),
         ] + [get_filter(attr, cmn.current_date_idx, None, None, attr in selected_filters) for attr in cmn.attributes.keys()],
         style={'width': cmn.filter_wd}
     )
 
 
-def get_time_filtered_tab_div(map_div, scatterplot_div):
+def get_time_filtered_tab_div(divs):
     '''
     build div for tabbed plots with time filter slider below the plots
     '''
@@ -155,10 +188,7 @@ def get_time_filtered_tab_div(map_div, scatterplot_div):
                                              } if d.dayofweek==1 else '' for d in cmn.dates]))
     return html.Div(
         children=[
-            dcc.Tabs([dcc.Tab(label='Map', children=[map_div]),
-                      dcc.Tab(label='Scatterplot', children=[scatterplot_div])
-                     ]
-            ),
+            dcc.Tabs([dcc.Tab(label=title, children=[div]) for title, div in divs.items()]),
             dcc.Slider(
                 id='date_slider',
                 updatemode='mouseup',
@@ -187,7 +217,7 @@ def get_app_layout():
             html.Div(
                 children=[
                     filters_div,
-                    get_time_filtered_tab_div(map_div, scatterplot_div),
+                    get_time_filtered_tab_div({'Map': map_div, 'Scatterplot': scatterplot_div}),
                     ts_div
                 ],
                 className='row',
@@ -357,21 +387,22 @@ def update_all(geo, attribute, date_idx, selected_filters, *filter_values):
     dash.dependencies.Output('Timelines', 'children'),
     [dash.dependencies.Input('Map', 'clickData'),
      dash.dependencies.Input('timeline_attrs', 'value'),
-     dash.dependencies.Input('timeline_reset', 'n_clicks')])
-def process_timeline_changes(clickData, value, reset):
+     dash.dependencies.Input('timeline_reset', 'n_clicks')] +
+    [dash.dependencies.Input('timeline_logy_'+attr, 'value') for attr in cmn.ts_attrs])
+def process_timeline_changes(clickData, attrs, reset, *logy):
     global ts_div
     ctx = dash.callback_context
     if ctx.triggered[0]['prop_id'] == 'timeline_reset.n_clicks':
-        ts_div = get_timeseries_div(value)
+        ts_div = get_timeseries_div(attrs, logy=logy)
     else:
         if cmn.current_geo == cmn.geo_areas[0]:  # states
             click_state = clickData['points'][0]['location'] if clickData else None
-            ts_div = get_timeseries_div(value, state=click_state)
+            ts_div = get_timeseries_div(attrs, state=click_state, logy=logy)
         elif cmn.current_geo == cmn.geo_areas[1]:  # counties
             click_county = clickData['points'][0]['location'] if clickData else None
-            ts_div = get_timeseries_div(value, county=click_county)
+            ts_div = get_timeseries_div(attrs, county=click_county, logy=logy)
         else:
-            update_selected_timelines(value)
+            update_selected_timelines(attrs)
     return ts_div
 
 # scatterplot callbacks

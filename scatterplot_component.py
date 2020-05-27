@@ -52,7 +52,7 @@ def get_scatterplot_div():
                 figure=scatterplot_figure(attrs[0], attrs[-1], None, None, False, False)
             ),
         ],
-        style={"border-top":"1px black solid", 'width': cmn.scatter_wd}
+        #style={"border-top":"1px black solid", 'width': cmn.scatter_wd}
     )
 
 

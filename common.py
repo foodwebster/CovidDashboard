@@ -12,9 +12,11 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'cases_per_100k': {'name': 'Cases per 100k', 'log': True}, 
               'deaths_per_100k': {'name': 'Deaths per 100k', 'log': True},
               'new_cases': {'name': 'New Cases', 'log': True},
+              'new_cases_per_100k': {'name': 'New Cases per 100k', 'log': True}, 
               'new_deaths': {'name': 'New Deaths', 'log': True},
               'overall_pct_change': {'name': 'Mobility % Change', 'log': False},
               'Poverty': {'name': 'Poverty %', 'log': False},
+              'population': {'name': 'Population', 'log': True},
               }
 
 ts_attrs = ['cases', 'deaths', 'new_cases', 'new_deaths', 'overall_pct_change']
