@@ -7,8 +7,8 @@ from plotly.offline import plot
 def scatter_plot(df, xattr, yattr, szattr=None, colorattr=None, logx=False, logy=False, title=None, ht=600, wd=1200):
     sz_min = 5
     sz_max = 50
-    x_vals = df[xattr]
-    y_vals = df[yattr]
+    x_vals = df.loc[~df[xattr].isnull().to_numpy(), xattr]
+    y_vals = df.loc[~df[yattr].isnull().to_numpy(), yattr]
     marker = {}
     if szattr is not None:
         sz = df[szattr].to_numpy()
