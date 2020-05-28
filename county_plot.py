@@ -15,7 +15,8 @@ with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-c
 def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
     
     fig = go.Figure()
-    values = df.loc[~df[attr].isnull().to_numpy(), attr]
+    not_null = ~df[x_attr].isnull().to_numpy()
+    values = df.loc[not_null, x_attr]
     if log_data:
         min_val = values.min()/10.0 or 1.0
         plot_data = np.log10(values + min_val)
@@ -34,9 +35,9 @@ def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, tit
                            zmax=plot_max,
                            marker_opacity=1.0,
                            visible=True, 
-                           text=df.State + ' ' + df['County Name'] + '<br>' 
-                                         + attr_name + ': ' + cmn.series_as_string(df[x_attr]) + '<br>'
-                                         + 'Population' + ': ' + cmn.series_as_string(df.population),
+                           text=df.State + ' ' + df.loc[not_null, 'County Name'] + '<br>' 
+                                         + attr_name + ': ' + cmn.series_as_string(values) + '<br>'
+                                         + 'Population' + ': ' + cmn.series_as_string(df.loc[not_null, 'population']),
                            hovertemplate = '<br>%{text}<extra></extra>',
                            colorbar={'tickprefix': tickprefix}
                           )        
