@@ -17,6 +17,9 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'overall_pct_change': {'name': 'Mobility % Change', 'log': False},
               'Poverty': {'name': 'Poverty %', 'log': False},
               'population': {'name': 'Population', 'log': True},
+              'Service': {'name': 'Service', 'log': False},
+              'Production': {'name': 'Production', 'log': False},
+              'dem_gop_diff_16': {'name': 'dem_gop_diff_16', 'log': False},
               }
 
 ts_attrs = ['cases', 'deaths', 'new_cases', 'new_deaths', 'overall_pct_change']
