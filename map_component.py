@@ -27,7 +27,7 @@ def get_county_plot_data(attr, date_idx):
 
 def get_county_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_county_plot_data(attr, date_idx)
-    return county_plot(data, attr, 'fips_str', cmn.attributes[attr]['name'],
+    return county_plot(data, attr, 'fips_str',
                        data_max, data_min, 
                        cmn.attributes[attr]['log'], "Covid-19 Data", 
                        wd=wd, ht=ht)
@@ -46,7 +46,7 @@ def get_state_plot_data(attr, date_idx):
 
 def get_state_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_state_plot_data(attr, date_idx)
-    return state_plot(data, attr, 'State', cmn.attributes[attr]['name'],
+    return state_plot(data, attr, 'State',
                       data_max, data_min, 
                       cmn.attributes[attr]['log'], "Covid-19 Data", 
                       wd=wd, ht=ht)

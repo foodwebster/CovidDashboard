@@ -12,8 +12,13 @@ import common as cmn
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
-def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
-    
+def get_hover_text(df, values, not_null, attr_name):
+    return (df.loc[not_null, 'State'] + ' ' + df.loc[not_null, 'County Name'] + '<br>' 
+                                     + attr_name + ': ' + cmn.series_as_string(values) + '<br>'
+                                     + 'Population' + ': ' + cmn.series_as_string(df.loc[not_null, 'population']))
+
+def county_plot(df, x_attr, y_attr, data_max, data_min, log_data, title, wd=1000, ht=600):
+    attr_name = cmn.attributes[x_attr]['name']
     fig = go.Figure()
     not_null = ~df[x_attr].isnull().to_numpy()
     values = df.loc[not_null, x_attr]
@@ -35,9 +40,7 @@ def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, tit
                            zmax=plot_max,
                            marker_opacity=1.0,
                            visible=True, 
-                           text=df.loc[not_null, 'State'] + ' ' + df.loc[not_null, 'County Name'] + '<br>' 
-                                         + attr_name + ': ' + cmn.series_as_string(values) + '<br>'
-                                         + 'Population' + ': ' + cmn.series_as_string(df.loc[not_null, 'population']),
+                           text=get_hover_text(df, values, not_null, attr_name),
                            hovertemplate = '<br>%{text}<extra></extra>',
                            colorbar={'tickprefix': tickprefix}
                           )        
@@ -82,6 +85,7 @@ def update_county_plot(fig, df, data_max, data_min, x_attr, log_data):
     fig['data'][0].z = plot_data
     fig['data'][0].zmax = plot_max
     fig['data'][0].zmin = plot_min
+    fig['data'][0].text = get_hover_text(df, values, not_null, cmn.attributes[x_attr]['name'])
     
     
 if __name__ == "__main__":
@@ -95,5 +99,5 @@ if __name__ == "__main__":
     attr = attributes[0]
     #data = county_df[['fips_str', attr]]
     data = county_df.loc[county_df.index.max()]
-    fig = county_plot(data, attr, 'fips_str', 'County', data[attr].max(), data[attr].min(), True, "Covid-19 Cases")
+    fig = county_plot(data, attr, 'fips_str', data[attr].max(), data[attr].min(), True, "Covid-19 Cases")
     plot(fig)
