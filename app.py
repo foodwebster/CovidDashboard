@@ -11,7 +11,7 @@ from load_data import load_data
 from timeline_plot import timeline_plot
 from histog_plot import histog_plot
 
-from map_component import get_map_div, update_map
+from map_component import get_map_div, update_map, update_map_figure
 from scatterplot_component import get_scatterplot_div, scatterplot_figure
 
 cmn.country_df, cmn.state_df, cmn.county_df, cmn.dates = load_data()
@@ -283,6 +283,9 @@ def get_attr_slider(attr):
 
 
 def update_filter_values(*values):
+    '''
+    get selected items given the filter values
+    '''
     #print("updating filters %s"%str(values))
     global filters_div
     selected = None
@@ -337,6 +340,15 @@ def changed_filter_values(ctx):
     return changed in ids
     
 
+def changed_map_options(ctx):
+    '''
+    return True if map data (geo, attribute, date) changed by user action
+    '''
+    changed = ctx.triggered[0]['prop_id']
+    ids = [val+'.value' for val in ['geo', 'attribute', 'date_slider']]
+    return changed in ids    
+
+
 # callback to redisplay map and selection
 @app.callback(
     dash.dependencies.Output('Map', 'figure'),
@@ -347,13 +359,7 @@ def changed_filter_values(ctx):
         dash.dependencies.Input('filter_attrs', 'value'),
     ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
     )
-def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
-
-    def changed_map_options(ctx):
-        changed = ctx.triggered[0]['prop_id']
-        ids = [val+'.value' for val in ['geo', 'attribute', 'date_slider']]
-        return changed in ids    
-    
+def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):    
     global filters_div
     ctx = dash.callback_context
     
@@ -362,7 +368,10 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
     if ctx.triggered[0]['prop_id'] != '.':
         if changed_map_options(ctx):
             # change in map options (state/county, date etc)
-            cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
+            if geo != cmn.current_geo:
+                cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
+            else:
+                update_map_figure(cur_map, geo, attribute, date_idx)
         selected = update_filter_values(filter_values)
         # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
@@ -380,12 +389,6 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
     ] + [dash.dependencies.Input('filter_slider_'+attr, 'value') for attr in cmn.attributes.keys()]
     )
 def update_filters(geo, date_idx, selected_filters, *filter_values):
-
-    def changed_map_options(ctx):
-        changed = ctx.triggered[0]['prop_id']
-        ids = [val+'.value' for val in ['geo', 'attribute', 'date_slider']]
-        return changed in ids    
-    
     global filters_div
     ctx = dash.callback_context
     

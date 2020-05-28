@@ -42,6 +42,22 @@ def state_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, titl
     return fig
 
 
+def update_state_plot(fig, df, data_max, data_min, x_attr, log_data):
+    values = df[x_attr]
+    if log_data:
+        min_val = values.min()/10.0 or 1.0
+        plot_data = np.log10(values + min_val)
+        plot_max = np.log10(data_max + min_val)
+        plot_min = np.log10(data_min + min_val)
+    else:
+        plot_data = values
+        plot_max = data_max
+        plot_min = data_min
+    fig['data'][0].z = plot_data
+    fig['data'][0].zmax = plot_max
+    fig['data'][0].zmin = plot_min
+
+
 if __name__ == "__main__":
     # execute only if run as a script
     from prepare_case_data import get_case_data

@@ -4,8 +4,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 import common as cmn
-from county_plot import county_plot
-from state_plot import state_plot
+from county_plot import county_plot, update_county_plot
+from state_plot import state_plot, update_state_plot
 
 
 def get_init_attr():
@@ -62,6 +62,18 @@ def get_map_plot(geo, attr, date_idx, wd, ht):
     else:
         fig = get_county_plot(attr, date_idx, wd, ht)
     return fig
+
+
+def update_map_figure(fig, geo, attr, date_idx):
+    '''
+    update map data after change in displayed attribute or date
+    '''
+    if geo == cmn.geo_areas[0]:
+        df, data_max, data_min = get_state_plot_data(attr, date_idx)
+        update_state_plot(fig, df, data_max, data_min, attr, cmn.attributes[attr]['log'])
+    else:
+        df, data_max, data_min = get_county_plot_data(attr, date_idx)
+        update_county_plot(fig, df, data_max, data_min, attr, cmn.attributes[attr]['log'])
 
 
 def get_map_div():
