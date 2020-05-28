@@ -15,14 +15,15 @@ with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-c
 def county_plot(df, x_attr, y_attr, attr_name, data_max, data_min, log_data, title, wd=1000, ht=600):
     
     fig = go.Figure()
+    values = df.loc[~df[attr].isnull().to_numpy(), attr]
     if log_data:
-        min_val = df[x_attr].min()/10.0 or 1.0
-        plot_data = np.log10(df[x_attr] + min_val)
+        min_val = values.min()/10.0 or 1.0
+        plot_data = np.log10(values + min_val)
         plot_max = np.log10(data_max + min_val)
         plot_min = np.log10(data_min + min_val)
         tickprefix = '10^'
     else:
-        plot_data = df[x_attr]
+        plot_data = values
         plot_max = data_max
         plot_min = data_min
         tickprefix = ''
