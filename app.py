@@ -16,9 +16,8 @@ from scatterplot_component import get_scatterplot_div, scatterplot_figure
 
 cmn.country_df, cmn.state_df, cmn.county_df, cmn.dates = load_data()
 
-
-
 cmn.current_date_idx = len(cmn.dates) - 1
+
 
 def get_timeline_plot(dates, values, logy):
     values = values.fillna(values.mean())
@@ -367,11 +366,15 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
     cur_map = map_div.children[1].figure
     if ctx.triggered[0]['prop_id'] != '.':
         if changed_map_options(ctx):
+            #mapbox_zoom = cur_map['layout'][0].mapbox_zoom
+            #mapbox_center = cur_map['layout'][0].mapbox_center
             # change in map options (state/county, date etc)
             if geo != cmn.current_geo:
                 cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
             else:
                 update_map_figure(cur_map, geo, attribute, date_idx)
+            #cur_map['layout'][0].mapbox_zoom = mapbox_zoom
+            #cur_map['layout'][0].mapbox_center = mapbox_center
         selected = update_filter_values(filter_values)
         # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
