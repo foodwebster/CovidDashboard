@@ -15,4 +15,7 @@ def load_data():
     
     return country_df, state_df, county_df, dates
 
+if __name__ == "__main__":
+    # execute only if run as a script
+    country_df, state_df, county_df, dates = load_data()
 

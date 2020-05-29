@@ -12,16 +12,15 @@ import common as cmn
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
-def get_hover_text(df, values, not_null, attr_name):
-    return (df.loc[not_null, 'State'] + ' ' + df.loc[not_null, 'County Name'] + '<br>' 
+def get_hover_text(df, values, attr_name):
+    return (df['State'] + ' ' + df['County Name'] + '<br>' 
                                      + attr_name + ': ' + cmn.series_as_string(values) + '<br>'
-                                     + 'Population' + ': ' + cmn.series_as_string(df.loc[not_null, 'population']))
+                                     + 'Population' + ': ' + cmn.series_as_string(df['population']))
 
 def county_plot(df, x_attr, y_attr, data_max, data_min, log_data, title, wd=1000, ht=600):
     attr_name = cmn.attributes[x_attr]['name']
     fig = go.Figure()
-    not_null = ~df[x_attr].isnull().to_numpy()
-    values = df.loc[not_null, x_attr]
+    values = df[x_attr]
     if log_data:
         min_val = values.min()/10.0 or 1.0
         plot_data = np.log10(values + min_val)
@@ -40,7 +39,7 @@ def county_plot(df, x_attr, y_attr, data_max, data_min, log_data, title, wd=1000
                            zmax=plot_max,
                            marker_opacity=1.0,
                            visible=True, 
-                           text=get_hover_text(df, values, not_null, attr_name),
+                           text=get_hover_text(df, values, attr_name),
                            hovertemplate = '<br>%{text}<extra></extra>',
                            colorbar={'tickprefix': tickprefix}
                           )        

@@ -20,7 +20,6 @@ cmn.current_date_idx = len(cmn.dates) - 1
 
 
 def get_timeline_plot(dates, values, logy):
-    values = values.fillna(values.mean())
     return timeline_plot(dates, 
                          values, 
                          logy=logy,
@@ -94,7 +93,7 @@ def get_histog_plot(attr, date_idx, state, county):
         data = cmn.state_df.loc[cmn.dates[date_idx]]
     else:
         data = cmn.county_df.loc[cmn.dates[date_idx]]
-    values = data.loc[~data[attr].isnull().to_numpy(), attr]
+    values = data[attr]
     return histog_plot(values, xlabel=cmn.attributes[attr]['name'])
 
 
