@@ -84,7 +84,7 @@ def update_county_plot(fig, df, data_max, data_min, x_attr, log_data):
     fig['data'][0].z = plot_data
     fig['data'][0].zmax = plot_max
     fig['data'][0].zmin = plot_min
-    fig['data'][0].text = get_hover_text(df, values, not_null, cmn.attributes[x_attr]['name'])
+    fig['data'][0].text = get_hover_text(df, values, cmn.attributes[x_attr]['name'])
     
     
 if __name__ == "__main__":

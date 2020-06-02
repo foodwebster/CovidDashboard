@@ -15,11 +15,13 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'new_cases_per_100k': {'name': 'New Cases per 100k', 'log': True}, 
               'new_deaths': {'name': 'New Deaths', 'log': True},
               'overall_pct_change': {'name': 'Mobility % Change', 'log': False},
-              'Poverty': {'name': 'Poverty %', 'log': False},
+              'Poverty': {'name': '% In Poverty', 'log': False},
               'population': {'name': 'Population', 'log': True},
-              'Service': {'name': 'Service', 'log': False},
-              'Production': {'name': 'Production', 'log': False},
-              'dem_gop_diff_16': {'name': 'dem_gop_diff_16', 'log': False},
+              'Service': {'name': '% Service Jobs', 'log': False},
+              'Production': {'name': '% Production Jobs', 'log': False},
+              'dem_gop_diff_16': {'name': 'Rep_vs_Dem Vote 2016', 'log': False},
+              'FBFilterBubble': {'name': 'FB Filter Bubble Index', 'log': False},
+              
               }
 
 ts_attrs = ['cases', 'deaths', 'new_cases', 'new_deaths', 'overall_pct_change']
@@ -33,11 +35,11 @@ current_date_idx = None
 current_attr = next(iter(attributes.keys()))
 current_ts_mode = timeseries_mode[0]
 
-map_wd = 800
+map_wd = 775
 map_ht = 500
 
-filter_wd = 400
-ts_wd = 400
+filter_wd = 320
+ts_wd = 320
 
 scatter_wd = map_wd
 #scatter_wd = filter_wd + map_wd
