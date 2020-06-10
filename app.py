@@ -8,7 +8,7 @@ import dash_html_components as html
 
 import common as cmn
 from load_data import load_data
-from timeline_plot import timeline_plot
+from timeline_plot import timeline_plot, add_timeline
 from histog_plot import histog_plot
 
 from map_component import get_map_div, update_map, update_map_figure
@@ -33,48 +33,58 @@ def get_ts_plot(attr, state, county, logy):
     '''
     if state is not None:
         sdf = cmn.state_df[cmn.state_df.State == state]
-        return get_timeline_plot(sdf.index, 
+        fig = get_timeline_plot(sdf.index, 
                                  sdf[attr], 
                                  logy,
                                 )
+        add_timeline(fig, cmn.country_df.index, cmn.country_df[attr])
     elif county is not None:
         cdf = cmn.county_df[cmn.county_df.fips_str == county]
-        return get_timeline_plot(cdf.index, 
+        fig = get_timeline_plot(cdf.index, 
                                  cdf[attr], 
                                  logy,
                                 )
+        add_timeline(fig, cmn.country_df.index, cmn.country_df[attr])
     else:
-        return get_timeline_plot(cmn.country_df.index, 
+        fig = get_timeline_plot(cmn.country_df.index, 
                                  cmn.country_df[attr], 
                                  logy,
                                  )
+    return fig
 
 def get_timeline(attr, state, county, show, logy):
     
     if state is not None:
-        title = state + " - " + cmn.attributes[attr]['name']
+        title = state
     elif county is not None:
         cdf = cmn.county_df[cmn.county_df.fips_str == county]
-        title = cdf.iloc[0]['County Name'] + " " + cdf.iloc[0]['State'] + ' - ' + cmn.attributes[attr]['name']
+        title = cdf.iloc[0]['County Name'] + " " + cdf.iloc[0]['State']
     else:
-        title = "US - " + cmn.attributes[attr]['name']
+        title = "US"
+    line2 = cmn.attributes[attr]['name']
     logy = 'logy' in logy if logy is not None else cmn.attributes[attr]['log']
     return html.Div(
         children=[
             html.Div(children=[
-                        html.P(title, style={'margin-left': '10px', 'margin-right': '20px', 'line-height': '20px'}),
-                        dcc.Checklist(
-                            id='timeline_logy_' + attr,
-                            options=[
-                                {'label': 'Log y', 'value': 'logy'},
-                            ],
-                            value=['logy'] if logy else [],
-                            # only display log checkbox for attributes that allow log axis
-                            style={'margin-left': '10px', 'margin-right': '10px'} if cmn.attributes[attr]['log'] else {'display': 'none'}
-                        ), 
-                     ],
-                     className='row',
-                     style={'display': 'flex'}
+                html.Div(children=[
+                    html.P(title),
+                    html.P(line2),
+                    ]),                        
+                dcc.Checklist(
+                    id='timeline_logy_' + attr,
+                    options=[
+                        {'label': 'Log y', 'value': 'logy'},
+                    ],
+                    value=['logy'] if logy else [],
+                    # only display log checkbox for attributes that allow log axis
+                    style={'margin-left': '10px', 'margin-right': '10px'} if cmn.attributes[attr]['log'] else {'display': 'none'}
+                )],
+                className='row',
+                style={'display': 'flex',
+                       'margin-left': '10px', 
+                       'margin-right': '20px', 
+                       'line-height': '20px'
+                       }
             ),
             dcc.Graph(id='timeline_' + attr,
                       config=cmn.graph_config(),

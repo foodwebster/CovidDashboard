@@ -24,7 +24,11 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               
               }
 
-ts_attrs = ['cases', 'deaths', 'new_cases', 'new_deaths', 'overall_pct_change']
+ts_attrs = ['cases', 'cases_per_100k',
+            'deaths', 'deaths_per_100k',
+            'new_cases', 'new_cases_per_100k',
+            'new_deaths', 
+            'overall_pct_change']
 
 geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']

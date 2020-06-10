@@ -18,6 +18,12 @@ def timeline_plot(t, values, logy=True, title=None, ht=200):
     )
     return fig
 
+
+def add_timeline(fig, t, values):
+    fig.add_trace(go.Scatter(x=t, y=values, line={'color': 'lightgray'}))
+    fig.update_layout(showlegend=False)
+    
+
 if __name__ == "__main__":
     # execute only if run as a script
     from prepare_case_data import get_case_data
