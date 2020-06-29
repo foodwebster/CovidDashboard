@@ -91,7 +91,6 @@ if __name__ == "__main__":
     # execute only if run as a script
     from load_data import load_data
 
-
     country_df, state_df, county_df, dates = load_data()
     attributes = ['cases', 'deaths', 'total_case_rate', 'total_death_rate']
     

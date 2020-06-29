@@ -60,16 +60,14 @@ def update_state_plot(fig, df, data_max, data_min, x_attr, log_data):
 
 if __name__ == "__main__":
     # execute only if run as a script
-    from prepare_case_data import get_case_data
-    from prepare_movement_data import get_movement_data
+    from load_data import load_data
 
-    country_case_df, state_case_df, county_case_df = get_case_data()
-    country_mmt_df, state_mmt_df, county_mmt_df = get_movement_data()
+    country_df, state_df, county_df, dates = load_data()
     attributes = ['cases', 'deaths', 'total_case_rate', 'total_death_rate']
     
     attr = attributes[0]
-    data = state_case_df[['State', attr]]
+    data = state_df[['State', attr]]
     data = data.loc[data.index.max()]
-    fig = state_plot(data[attr], data['State'], data[attr].max(), data[attr].min(), True, "Covid-19 Cases")
+    fig = state_plot(data, attr, 'State', attr, data[attr].max(), data[attr].min(), True, "Covid-19 Cases")
     fig['data'][0]['selectedpoints'] = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
     plot(fig)
