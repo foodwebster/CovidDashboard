@@ -31,7 +31,8 @@ ts_attrs = ['cases', 'cases_per_100k',
 
 geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']
-   
+
+init_attr = 5   
 country_df = state_df = county_df = dates = None 
 current_geo = None
 current_date_idx = None
@@ -64,7 +65,7 @@ def graph_config():
 def attribute_selector(id_str, default=None, allow_none=False, ht='38px'):
     options = [{'label': 'None', 'value': 'None'}] if allow_none else []
     options = options + [{'label': attributes[attr]['name'], 'value': attr} for attr in attributes.keys()]
-    default_val = 'None' if (allow_none and default is None) else (default or next(iter(attributes.keys())))
+    default_val = 'None' if (allow_none and default is None) else (default or list(iter(attributes.keys()))[init_attr])
     return dcc.Dropdown(
         id=id_str,
         options=options,

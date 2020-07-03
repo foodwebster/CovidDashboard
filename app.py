@@ -214,9 +214,9 @@ def get_time_filtered_tab_div(divs):
 def get_app_layout():
     global filters_div, map_div, ts_div, scatterplot_div, current_geo
     current_geo = cmn.geo_areas[1]
-    filters_div = get_filters_div([next(iter(cmn.attributes.keys()))])
+    filters_div = get_filters_div([list(iter(cmn.attributes.keys()))[cmn.init_attr]])
     map_div = get_map_div(current_geo)
-    ts_div = get_timeseries_div([cmn.ts_attrs[0], cmn.ts_attrs[-1]])
+    ts_div = get_timeseries_div([cmn.ts_attrs[cmn.init_attr], cmn.ts_attrs[-1]])
     scatterplot_div = get_scatterplot_div(current_geo)
     return html.Div(
         children=[

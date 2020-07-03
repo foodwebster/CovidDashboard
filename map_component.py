@@ -9,7 +9,7 @@ from state_plot import state_plot, update_state_plot
 
 
 def get_init_attr():
-    return next(iter(cmn.attributes.keys()))
+    return list(iter(cmn.attributes.keys()))[cmn.init_attr]
     #return list(cmn.attributes.keys())[-1]
     
 
