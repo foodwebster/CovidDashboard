@@ -5,7 +5,6 @@ import dash_core_components as dcc
 
 datapath = pl.Path('data')
 
-
 # list of data attributes
 attributes = {'cases': {'name': 'Cases', 'log': True}, 
               'deaths': {'name': 'Deaths', 'log': True},
@@ -34,7 +33,7 @@ geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']
    
 country_df = state_df = county_df = dates = None 
-current_geo = geo_areas[1]
+current_geo = None
 current_date_idx = None
 current_attr = next(iter(attributes.keys()))
 current_ts_mode = timeseries_mode[0]
@@ -52,13 +51,8 @@ scatter_wd = map_wd
 scatterplot_div = filters_div = map_div = ts_div = None
 
 
-def get_current_data(geo=None):
-    geo = geo or current_geo
-    if geo == geo_areas[0]:
-        df = state_df
-    else:
-        df = county_df
-    return df
+def get_current_data(geo):
+    return state_df if geo == geo_areas[0] else county_df
     
 
 def graph_config():
@@ -77,7 +71,7 @@ def attribute_selector(id_str, default=None, allow_none=False, ht='38px'):
         value=default_val,
         searchable=False,
         clearable=False,
-        style={'height': ht, 'width': '200px', 'font-size': '15px'}
+        style={'height': ht, 'width': '200px', 'fontSize': '15px'}
     )
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#import json
+import json
 import dash
 import dash_auth
 import dash_core_components as dcc
@@ -212,11 +212,12 @@ def get_time_filtered_tab_div(divs):
 
 
 def get_app_layout():
-    global filters_div, map_div, ts_div, scatterplot_div
+    global filters_div, map_div, ts_div, scatterplot_div, current_geo
+    current_geo = cmn.geo_areas[1]
     filters_div = get_filters_div([next(iter(cmn.attributes.keys()))])
-    map_div = get_map_div()
+    map_div = get_map_div(current_geo)
     ts_div = get_timeseries_div([cmn.ts_attrs[0], cmn.ts_attrs[-1]])
-    scatterplot_div = get_scatterplot_div()
+    scatterplot_div = get_scatterplot_div(current_geo)
     return html.Div(
         children=[
             html.H1(children='Covid Dashboard', style={
@@ -357,7 +358,7 @@ def changed_map_options(ctx):
     return changed in ids    
 
 
-# callback to redisplay map and selection
+# callback to redisplay map and selection based on state/county, attribute, date and filters
 @app.callback(
     dash.dependencies.Output('Map', 'figure'),
     [
@@ -375,15 +376,15 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
     cur_map = map_div.children[1].figure
     if ctx.triggered[0]['prop_id'] != '.':
         if changed_map_options(ctx):
-            #mapbox_zoom = cur_map['layout'][0].mapbox_zoom
-            #mapbox_center = cur_map['layout'][0].mapbox_center
             # change in map options (state/county, date etc)
             if geo != cmn.current_geo:
+                #mapbox_zoom = cur_map['layout'][0].mapbox_zoom
+                #mapbox_center = cur_map['layout'][0].mapbox_center
                 cur_map = map_div.children[1].figure = update_map(geo, attribute, date_idx)
+                #cur_map['layout'][0].mapbox_zoom = mapbox_zoom
+                #cur_map['layout'][0].mapbox_center = mapbox_center
             else:
                 update_map_figure(cur_map, geo, attribute, date_idx)
-            #cur_map['layout'][0].mapbox_zoom = mapbox_zoom
-            #cur_map['layout'][0].mapbox_center = mapbox_center
         selected = update_filter_values(filter_values)
         # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
@@ -391,7 +392,7 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
     return cur_map
 
 
-# callback for dropdowns display correct map (state/county, attribute, date), date and filters
+# callback for dropdowns to display filters
 @app.callback(
     dash.dependencies.Output('Filters', 'children'),
     [
@@ -403,19 +404,20 @@ def update_map_plot(geo, attribute, date_idx, selected_filters, *filter_values):
 def update_filters(geo, date_idx, selected_filters, *filter_values):
     global filters_div
     ctx = dash.callback_context
+    #return [html.H5("Geo: %s %s"%(geo, json.dumps(ctx.triggered)))] + filters_div.children
+    cmn.current_geo = geo
     
     selected = None
     cur_map = map_div.children[1].figure
     if ctx.triggered[0]['prop_id'] != '.':
         # call triggered by a change in UI param
-        if ctx.triggered[0]['prop_id'] == 'filter_attrs.value':
-            # change in selected filters
-            update_selected_filters(selected_filters)
-        elif changed_map_options(ctx):
-            # new geo, date or attribute, force new filters
-            filters_div = get_filters_div(selected_filters)
-        #elif changed_filter_values(ctx):
-            # change in filter slider value
+        update_selected_filters(selected_filters)
+        #if ctx.triggered[0]['prop_id'] == 'filter_attrs.value':
+        #    # change in selected filters
+        #    update_selected_filters(selected_filters)
+        #elif changed_map_options(ctx):
+        #    # new geo, date or attribute, force new filters
+        #    filters_div.children = get_filters_div(selected_filters).children
         selected = update_filter_values(filter_values)
         # select values in map and scatterplot
         cur_map.data[0]['selectedpoints'] = selected
@@ -423,8 +425,8 @@ def update_filters(geo, date_idx, selected_filters, *filter_values):
         update_selected_filters(selected_filters)
 
     return filters_div.children
-    #return [html.H5("%s, filters: %s, values: %s"%(json.dumps(ctx.triggered), str(selected_filters), str(filter_values)))] + filters_div.children
-
+    #return [html.H5("Geo: %s %s"%(geo, json.dumps(ctx.triggered)))] + filters_div.children
+    
 
 # callback to update timelines in response to map click or reset button
 @app.callback(

@@ -27,7 +27,7 @@ def get_county_plot_data(attr, date_idx):
 
 def get_county_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_county_plot_data(attr, date_idx)
-    return county_plot(data, attr, 'fips_str',
+    return county_plot(data, attr, 'fips_str', 
                        data_max, data_min, 
                        cmn.attributes[attr]['log'], "Covid-19 Data", 
                        wd=wd, ht=ht)
@@ -46,11 +46,10 @@ def get_state_plot_data(attr, date_idx):
 
 def get_state_plot(attr, date_idx, wd, ht):
     data, data_max, data_min = get_state_plot_data(attr, date_idx)
-    return state_plot(data, attr, 'State',
+    return state_plot(data, attr, 'State', cmn.attributes[attr]['name'],
                       data_max, data_min, 
                       cmn.attributes[attr]['log'], "Covid-19 Data", 
                       wd=wd, ht=ht)
-
 
 def get_map_plot(geo, attr, date_idx, wd, ht):
     cmn.current_attr = attr
@@ -76,7 +75,7 @@ def update_map_figure(fig, geo, attr, date_idx):
         update_county_plot(fig, df, data_max, data_min, attr, cmn.attributes[attr]['log'])
 
 
-def get_map_div():
+def get_map_div(geo):
     return html.Div(
         children=[
             html.Div(
@@ -84,7 +83,7 @@ def get_map_div():
                     dcc.Dropdown(
                         id='geo',
                         options=[{'label': val, 'value': val} for val in cmn.geo_areas],
-                        value=cmn.current_geo,
+                        value=geo,
                         searchable=False,
                         clearable=False,
                         style={'height': '38px', 'width': '150px', 'fontSize': '15px'}
@@ -97,7 +96,7 @@ def get_map_div():
             dcc.Graph(
                 id='Map',
                 config=cmn.graph_config(),
-                figure=get_map_plot(cmn.current_geo, 
+                figure=get_map_plot(geo, 
                                     get_init_attr(), 
                                     len(cmn.dates) - 1, 
                                     cmn.map_wd,
@@ -109,8 +108,11 @@ def get_map_div():
 
 
 def update_map(geo, attribute, date_idx):
+    '''
+    update map to new geo
+    '''
     attr = attribute or get_init_attr()
-    geo = geo or cmn.geo_areas[0]
+    #geo = geo or cmn.geo_areas[0]
     return get_map_plot(geo, attr, date_idx, cmn.map_wd, cmn.map_ht)
 
 

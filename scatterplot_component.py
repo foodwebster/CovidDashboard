@@ -6,7 +6,7 @@ import dash_html_components as html
 import common as cmn
 from scatter_plot import scatter_plot
 
-def get_scatterplot_div():
+def get_scatterplot_div(geo):
     text_style = {'margin-left': '10px', 'margin-right': '10px', 'line-height': '38px'}
     attrs = list(cmn.attributes.keys())
     return html.Div(
@@ -49,14 +49,14 @@ def get_scatterplot_div():
             dcc.Graph(
                 id='Scatterplot',
                 config=cmn.graph_config(),
-                figure=scatterplot_figure(attrs[0], attrs[-1], None, None, False, False)
+                figure=scatterplot_figure(attrs[0], attrs[-1], None, None, False, False, geo)
             ),
         ],
         #style={"border-top":"1px black solid", 'width': cmn.scatter_wd}
     )
 
 
-def scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo=None, date_idx=None):
+def scatterplot_figure(xattr, yattr, colorattr, sizeattr, logx, logy, geo, date_idx=None):
     df = cmn.get_current_data(geo)
     df = df[df.index == cmn.dates[date_idx or cmn.current_date_idx]]
     return scatter_plot(df, xattr, yattr,
