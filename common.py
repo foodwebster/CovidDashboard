@@ -13,6 +13,7 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'new_cases': {'name': 'New Cases', 'log': True},
               'new_cases_per_100k': {'name': 'New Cases per 100k', 'log': True}, 
               'new_deaths': {'name': 'New Deaths', 'log': True},
+              'new_deaths_per_100k': {'name': 'New Deaths per 100k', 'log': True}, 
               'overall_pct_change': {'name': 'Mobility % Change', 'log': False},
               'Poverty': {'name': '% In Poverty', 'log': False},
               'population': {'name': 'Population', 'log': True},
@@ -42,10 +43,15 @@ current_ts_mode = timeseries_mode[0]
 map_wd = 775
 map_ht = 500
 
-filter_wd = 320
-ts_wd = 320
+scatter_wd = 625
 
-scatter_wd = map_wd
+filter_wd = 320
+#ts_wd = 320
+ts_wd = scatter_wd
+
+h_filter_wd = 775 + ts_wd
+filter_dropdn_wd = 250
+
 #scatter_wd = filter_wd + map_wd
 
 

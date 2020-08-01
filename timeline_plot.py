@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 
 
-def timeline_plot(t, values, logy=True, title=None, ht=200):
+def timeline_plot(t, values, logy=True, title=None, ht=120):
     fig = go.Figure(data=go.Scatter(x=t, y=values))
     if logy:
         fig.update_layout(yaxis_type="log")
