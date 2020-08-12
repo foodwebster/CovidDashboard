@@ -64,7 +64,7 @@ def get_app_layout():
     current_geo = cmn.geo_areas[1]
     filters_div = get_filters_div_horiz([list(iter(cmn.attributes.keys()))[cmn.init_attr]])
     map_div = get_map_div(current_geo)
-    ts_div = get_timeline_div([cmn.ts_attrs[cmn.init_attr], cmn.ts_attrs[-1]])
+    ts_div = get_timeline_div([cmn.ts_attrs[cmn.init_attr], cmn.ts_attrs[6]])
     scatterplot_div = get_scatterplot_div(current_geo)
     return html.Div(
         children=[

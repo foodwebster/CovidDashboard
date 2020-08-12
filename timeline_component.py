@@ -64,22 +64,22 @@ def get_timeline(attr, state, county, show, logy):
                     ],
                     value=['logy'] if logy else [],
                     # only display log checkbox for attributes that allow log axis
-                    style={'margin-left': '10px', 'margin-right': '10px'} if cmn.attributes[attr]['log'] else {'display': 'none'}
+                    style={'marginLeft': '10px', 'marginRight': '10px'} if cmn.attributes[attr]['log'] else {'display': 'none'}
                 )],
                 className='row',
                 style={'display': 'flex',
-                       'margin-left': '10px', 
-                       'margin-right': '20px', 
-                       'line-height': '20px'
+                       'marginLeft': '10px', 
+                       'marginRight': '20px', 
+                       'lineHeight': '20px'
                        }
             ),
             dcc.Graph(id='timeline_' + attr,
                       config=cmn.graph_config(),
                       figure=get_ts_plot(attr, state, county, logy),
-                      style={'margin-top': '0px'}
+                      style={'marginTop': '0px'}
             )      
         ],
-        style={'display': 'block' if show else 'none', 'margin-top': '10px'}
+        style={'display': 'block' if show else 'none', 'marginTop': '10px'}
     )    
 
 

@@ -21,14 +21,18 @@ attributes = {'cases': {'name': 'Cases', 'log': True},
               'Production': {'name': '% Production Jobs', 'log': False},
               'dem_gop_diff_16': {'name': 'Rep_vs_Dem Vote 2016', 'log': False},
               'FBFilterBubble': {'name': 'FB Filter Bubble Index', 'log': False},
-              
+              #'UnempRate': {'name': 'Unemployment Rate', 'log': False},
+              #'home_value': {'name': 'Home Value Index', 'log': False},
+              #'rent_index': {'name': 'Rental Cost Index', 'log': False},
               }
 
 ts_attrs = ['cases', 'cases_per_100k',
             'deaths', 'deaths_per_100k',
             'new_cases', 'new_cases_per_100k',
-            'new_deaths', 
-            'overall_pct_change']
+            'new_deaths', 'overall_pct_change',
+            #'UnempRate', 
+            #'home_value', 'rent_index',
+            ]
 
 geo_areas = ['States', 'Counties']
 timeseries_mode = ['Country', 'State', 'County']

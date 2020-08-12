@@ -9,7 +9,7 @@ def load_data():
     state_df = pd.read_csv(cmn.datapath/"StateData.csv", parse_dates=['date']).set_index('date')
     
     county_df = pd.read_csv(cmn.datapath/"CountyData.csv", parse_dates=['date']).set_index('date')
-    county_df.fips_str = county_df.fips_str.apply(lambda x: "%05d"%x)
+    county_df['fips_str'] = county_df.FIPS.apply(lambda x: "%05d"%x)
     
     dates = country_df.index.unique().to_list()
     

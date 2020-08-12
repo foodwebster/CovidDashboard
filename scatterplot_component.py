@@ -7,7 +7,7 @@ import common as cmn
 from scatter_plot import scatter_plot
 
 def get_scatterplot_div(geo):
-    text_style = {'margin-left': '10px', 'margin-right': '10px', 'line-height': '38px'}
+    text_style = {'marginLeft': '10px', 'marginRight': '10px', 'lineHeight': '38px'}
     attrs = list(cmn.attributes.keys())
     return html.Div(
         children=[
@@ -16,9 +16,9 @@ def get_scatterplot_div(geo):
                 children=[
                     html.Div(
                         children=[
-                            html.P("X:", style={'margin-left': '29px', 'margin-right': '10px', 'line-height': '38px'}),
+                            html.P("X:", style={'marginLeft': '29px', 'marginRight': '10px', 'lineHeight': '38px'}),
                             cmn.attribute_selector('x_attribute'),                    
-                            html.P("Y:", style={'margin-left': '38px', 'margin-right': '10px', 'line-height': '38px'}),
+                            html.P("Y:", style={'marginLeft': '38px', 'marginRight': '10px', 'lineHeight': '38px'}),
                             cmn.attribute_selector('y_attribute', default=attrs[-1]),
                             dcc.Checklist(
                                 id='log_axes',
@@ -27,7 +27,7 @@ def get_scatterplot_div(geo):
                                     {'label': 'Log y', 'value': 'logy'},
                                 ],
                                 value=[],
-                                style={'margin-left': '10px', 'margin-right': '10px'}
+                                style={'marginLeft': '10px', 'marginRight': '10px'}
                             ),
                         ],
                         className='row',
@@ -44,7 +44,7 @@ def get_scatterplot_div(geo):
                         style={'display': 'flex'}
                     )
                 ],
-                style={'margin-top': '5px'}
+                style={'marginTop': '5px'}
             ),
             dcc.Graph(
                 id='Scatterplot',

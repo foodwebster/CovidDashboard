@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from urllib.request import urlopen
+#from urllib.request import urlopen
 import json
 import numpy as np
 
@@ -9,7 +9,7 @@ from plotly.offline import plot
 
 import common as cmn
 
-with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+with open(cmn.datapath/'geojson_counties_fips.json') as response:
     counties = json.load(response)
 
 def get_hover_text(df, values, attr_name):
